@@ -1,0 +1,20 @@
+{
+	"ImportPath": "github.com/venicegeo/pdal-microservice",
+	"GoVersion": "go1.5beta1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/aws",
+			"Comment": "v1.0.4",
+			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
+		},
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/service/s3",
+			"Comment": "v1.0.4",
+			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "9c068cf16d982f8bd444b8c352acbeec34c4fe5b"
+		}
+	]
+}
