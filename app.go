@@ -15,7 +15,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -27,86 +29,66 @@ import (
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/session"
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3"
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
 )
 
 // var validPath = regexp.MustCompile("^/(info|pipeline)/([a-zA-Z0-9]+)$")
-var validPath = regexp.MustCompile("^/(info|pipeline)$")
+var validPath = regexp.MustCompile("^/(info)$")
 
-func makeHandler(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func main() {
+	router := httprouter.New()
+	router.POST("/info", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		m := validPath.FindStringSubmatch(r.URL.Path)
 		if m == nil {
 			http.NotFound(w, r)
 			return
 		}
-		fn(w, r)
-	}
-}
 
-func pipelineHandler(w http.ResponseWriter, req *http.Request) {
-	file, err := os.Create("download_file.laz")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer file.Close()
-
-	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
-	numBytes, err := downloader.Download(file,
-		&s3.GetObjectInput{
-			Bucket: aws.String("venicegeo-sample-data"),
-			Key:    aws.String("pointcloud/samp11-utm.laz"),
-		})
-	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			log.Println("Error:", awsErr.Code(), awsErr.Message())
-		} else {
-			fmt.Println(err.Error())
+		// Parse the incoming JSON body, and unmarshal as events.NewData struct.
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Fatal(err)
 		}
-		return
-	}
 
-	fmt.Fprintln(w, "Downloaded file", file.Name(), numBytes, "bytes")
-
-	out, _ := exec.Command("pdal", "pipeline", file.Name()).CombinedOutput()
-	fmt.Fprintln(w, string(out))
-}
-
-func infoHandler(w http.ResponseWriter, req *http.Request) {
-	file, err := os.Create("download_file.laz")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer file.Close()
-
-	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
-	numBytes, err := downloader.Download(file,
-		&s3.GetObjectInput{
-			Bucket: aws.String("venicegeo-sample-data"),
-			Key:    aws.String("pointcloud/samp11-utm.laz"),
-		})
-	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			log.Println("Error:", awsErr.Code(), awsErr.Message())
-		} else {
-			fmt.Println(err.Error())
+		type SourceBucket struct {
+			Bucket string `json:"bucket"`
+			Key    string `json:"key"`
 		}
-		return
-	}
+		var msg SourceBucket
+		if err := json.Unmarshal(b, &msg); err != nil {
+			log.Fatal(err)
+		}
 
-	fmt.Fprintln(w, "Downloaded file", file.Name(), numBytes, "bytes")
+		file, err := os.Create("download_file.laz")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer file.Close()
 
-	out, _ := exec.Command("pdal", "info", file.Name()).CombinedOutput()
-	fmt.Fprintln(w, string(out))
-}
+		downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
+		numBytes, err := downloader.Download(file,
+			&s3.GetObjectInput{
+				Bucket: aws.String(msg.Bucket),
+				Key:    aws.String(msg.Key),
+			})
+		if err != nil {
+			if awsErr, ok := err.(awserr.Error); ok {
+				log.Println("Error:", awsErr.Code(), awsErr.Message())
+			} else {
+				fmt.Println(err.Error())
+			}
+			return
+		}
 
-func main() {
-	r := mux.NewRouter()
-	r.HandleFunc("/info", makeHandler(infoHandler))
-	r.HandleFunc("/pipeline", makeHandler(pipelineHandler))
-	http.Handle("/", r)
+		fmt.Fprintln(w, "Downloaded file", file.Name(), numBytes, "bytes")
+
+		out, _ := exec.Command("pdal", "info", file.Name()).CombinedOutput()
+		fmt.Fprintln(w, string(out))
+	})
+
 	fmt.Println("Starting up on 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	if err := http.ListenAndServe(":8080", router); err != nil {
+		log.Fatal(err)
+	}
 }
