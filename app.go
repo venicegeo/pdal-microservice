@@ -34,6 +34,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"time"
 
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
@@ -45,6 +46,21 @@ import (
 
 // var validPath = regexp.MustCompile("^/(info|pipeline)/([a-zA-Z0-9]+)$")
 var validPath = regexp.MustCompile("^/(info)$")
+
+type JobInput struct {
+	Source struct {
+		Bucket string `json:"bucket"`
+		Key    string `json:"key"`
+	} `json:"source"`
+	Function string `json:"function"`
+}
+
+type JobOutput struct {
+	Input      JobInput  `json:"input"`
+	StartedAt  time.Time `json:"started_at"`
+	FinishedAt time.Time `json:"finished_at"`
+	Status     string    `json:"status"`
+}
 
 func main() {
 	router := httprouter.New()
@@ -66,14 +82,15 @@ func main() {
 			log.Fatal(err)
 		}
 
-		type SourceBucket struct {
-			Bucket string `json:"bucket"`
-			Key    string `json:"key"`
-		}
-		var msg SourceBucket
+		var msg JobInput
 		if err := json.Unmarshal(b, &msg); err != nil {
 			log.Fatal(err)
 		}
+
+		var res JobOutput
+		res.Input = msg
+		res.StartedAt = time.Now()
+		res.Status = "started"
 
 		file, err := os.Create("download_file.laz")
 		if err != nil {
@@ -86,8 +103,8 @@ func main() {
 		downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
 		numBytes, err := downloader.Download(file,
 			&s3.GetObjectInput{
-				Bucket: aws.String(msg.Bucket),
-				Key:    aws.String(msg.Key),
+				Bucket: aws.String(msg.Source.Bucket),
+				Key:    aws.String(msg.Source.Key),
 			})
 		if err != nil {
 			// errors here should also be JSON-encoded as below
@@ -101,15 +118,18 @@ func main() {
 
 		fmt.Fprintln(w, "Downloaded file", file.Name(), numBytes, "bytes")
 
-		out, _ := exec.Command("pdal", "info", file.Name()).CombinedOutput()
+		out, _ := exec.Command("pdal", msg.Function, file.Name()).CombinedOutput()
 		fmt.Fprintln(w, string(out))
 
+		res.Status = "finished"
+		res.FinishedAt = time.Now()
+
 		// output needs to be more meaningful
-		t := msg //`{"status":"success"}`
+		// t := msg //`{"status":"success"}`
 
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(t); err != nil {
+		if err := json.NewEncoder(w).Encode(res); err != nil {
 			log.Fatal(err)
 		}
 	})
