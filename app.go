@@ -48,6 +48,9 @@ import (
 // var validPath = regexp.MustCompile("^/(info|pipeline)/([a-zA-Z0-9]+)$")
 var validPath = regexp.MustCompile("^/(pdal)$")
 
+// JobInput defines the expected into JSON structure.
+// We currently support S3 input (bucket/key), though provider-specific (e.g.,
+// GRiD) may be legitimate.
 type JobInput struct {
 	Source struct {
 		Bucket string `json:"bucket"`
@@ -56,6 +59,7 @@ type JobInput struct {
 	Function string `json:"function"`
 }
 
+// JobOutput defines the expected output JSON structure.
 type JobOutput struct {
 	Input      JobInput                    `json:"input"`
 	StartedAt  time.Time                   `json:"started_at"`
@@ -64,6 +68,7 @@ type JobOutput struct {
 	Response   map[string]*json.RawMessage `json:"response"`
 }
 
+// pdalHandler handles PDAL jobs.
 func pdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Check that we have a valid path. Is this the correct place to do this?
 	m := validPath.FindStringSubmatch(r.URL.Path)
@@ -137,8 +142,6 @@ func pdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 func main() {
 	router := httprouter.New()
 
-	// POST /info expects JSON specifying S3 bucket/key of the point cloud.
-	// Alternatives should include a GRiD export primary key or URL. What about a local path?
 	router.POST("/pdal", pdalHandler)
 
 	log.Println("Starting /pdal on 8080")
