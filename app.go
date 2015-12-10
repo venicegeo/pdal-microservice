@@ -26,6 +26,7 @@ Examples
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -45,7 +46,7 @@ import (
 )
 
 // var validPath = regexp.MustCompile("^/(info|pipeline)/([a-zA-Z0-9]+)$")
-var validPath = regexp.MustCompile("^/(info)$")
+var validPath = regexp.MustCompile("^/(pdal)$")
 
 type JobInput struct {
 	Source struct {
@@ -56,10 +57,81 @@ type JobInput struct {
 }
 
 type JobOutput struct {
-	Input      JobInput  `json:"input"`
-	StartedAt  time.Time `json:"started_at"`
-	FinishedAt time.Time `json:"finished_at"`
-	Status     string    `json:"status"`
+	Input      JobInput                    `json:"input"`
+	StartedAt  time.Time                   `json:"started_at"`
+	FinishedAt time.Time                   `json:"finished_at"`
+	Status     string                      `json:"status"`
+	Response   map[string]*json.RawMessage `json:"response"`
+}
+
+func pdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	// Check that we have a valid path. Is this the correct place to do this?
+	m := validPath.FindStringSubmatch(r.URL.Path)
+	if m == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	// Parse the incoming JSON body, and unmarshal as events.NewData struct.
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var msg JobInput
+	if err := json.Unmarshal(b, &msg); err != nil {
+		log.Fatal(err)
+	}
+
+	var res JobOutput
+	res.Input = msg
+	res.StartedAt = time.Now()
+	res.Status = "started"
+
+	file, err := os.Create("download_file.laz")
+	if err != nil {
+		// errors here should also be JSON-encoded as below
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
+	numBytes, err := downloader.Download(file,
+		&s3.GetObjectInput{
+			Bucket: aws.String(msg.Source.Bucket),
+			Key:    aws.String(msg.Source.Key),
+		})
+	if err != nil {
+		// errors here should also be JSON-encoded as below
+		if awsErr, ok := err.(awserr.Error); ok {
+			log.Println("Error:", awsErr.Code(), awsErr.Message())
+		} else {
+			fmt.Println(err.Error())
+		}
+		return
+	}
+	log.Println("Downloaded", numBytes, "bytes")
+
+	out, _ := exec.Command("pdal", msg.Function, file.Name()).CombinedOutput()
+
+	// Trim whitespace
+	buffer := new(bytes.Buffer)
+	if err := json.Compact(buffer, out); err != nil {
+		fmt.Println(err)
+	}
+
+	if err = json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
+		log.Fatal(err)
+	}
+	res.Status = "finished"
+	res.FinishedAt = time.Now()
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
@@ -67,74 +139,9 @@ func main() {
 
 	// POST /info expects JSON specifying S3 bucket/key of the point cloud.
 	// Alternatives should include a GRiD export primary key or URL. What about a local path?
-	router.POST("/info", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	router.POST("/pdal", pdalHandler)
 
-		// Check that we have a valid path. Is this the correct place to do this?
-		m := validPath.FindStringSubmatch(r.URL.Path)
-		if m == nil {
-			http.NotFound(w, r)
-			return
-		}
-
-		// Parse the incoming JSON body, and unmarshal as events.NewData struct.
-		b, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var msg JobInput
-		if err := json.Unmarshal(b, &msg); err != nil {
-			log.Fatal(err)
-		}
-
-		var res JobOutput
-		res.Input = msg
-		res.StartedAt = time.Now()
-		res.Status = "started"
-
-		file, err := os.Create("download_file.laz")
-		if err != nil {
-			// errors here should also be JSON-encoded as below
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer file.Close()
-
-		downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
-		numBytes, err := downloader.Download(file,
-			&s3.GetObjectInput{
-				Bucket: aws.String(msg.Source.Bucket),
-				Key:    aws.String(msg.Source.Key),
-			})
-		if err != nil {
-			// errors here should also be JSON-encoded as below
-			if awsErr, ok := err.(awserr.Error); ok {
-				log.Println("Error:", awsErr.Code(), awsErr.Message())
-			} else {
-				fmt.Println(err.Error())
-			}
-			return
-		}
-
-		fmt.Fprintln(w, "Downloaded file", file.Name(), numBytes, "bytes")
-
-		out, _ := exec.Command("pdal", msg.Function, file.Name()).CombinedOutput()
-		fmt.Fprintln(w, string(out))
-
-		res.Status = "finished"
-		res.FinishedAt = time.Now()
-
-		// output needs to be more meaningful
-		// t := msg //`{"status":"success"}`
-
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(res); err != nil {
-			log.Fatal(err)
-		}
-	})
-
-	fmt.Println("Starting up on 8080")
+	log.Println("Starting /pdal on 8080")
 	if err := http.ListenAndServe(":8080", router); err != nil {
 		// errors here should also be JSON-encoded as above
 		log.Fatal(err)
