@@ -88,7 +88,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	res.Input = msg
-	res.Status = objects.Running.String()
+	UpdateJobManager(w, objects.Running)
 	// we have successfully parsed the input JSON, update JobManager that we are now running
 
 	file, err := os.Create("download_file.laz")
