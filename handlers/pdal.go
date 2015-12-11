@@ -61,19 +61,16 @@ func UpdateJobManager(t objects.StatusType) {
 
 // PdalHandler handles PDAL jobs.
 func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	log.Println("Received request")
 	var res objects.JobOutput
 	res.StartedAt = time.Now()
 
 	// Check that we have a valid path. Is this the correct place to do this?
-	log.Println("Checking to see if", r.URL.Path, "is a valid endpoint")
 	m := validPath.FindStringSubmatch(r.URL.Path)
 	if m == nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	log.Println("Attempt to read the JSON body")
 	// Parse the incoming JSON body, and unmarshal as events.NewData struct.
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -81,7 +78,6 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		log.Fatal(err)
 	}
 
-	log.Println("Attempt to unmarshal the JSON")
 	var msg objects.JobInput
 	if err := json.Unmarshal(b, &msg); err != nil {
 		UpdateJobManager(objects.Fail)
@@ -93,16 +89,15 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
+	log.Println("/pdal processing the data in", msg.Source.Bucket, "/", msg.Source.Key, "with", *msg.Function)
+
 	res.Input = msg
 	UpdateJobManager(objects.Running)
-	// we have successfully parsed the input JSON, update JobManager that we are now running
 
 	file, err := os.Create("download_file.laz")
 	if err != nil {
-		// errors here should also be JSON-encoded as below
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		res.Status = objects.Error.String()
-		// update the JobManager
+		UpdateJobManager(objects.Error)
 		return
 	}
 	defer file.Close()
