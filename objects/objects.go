@@ -48,7 +48,7 @@ type JobInput struct {
 		Bucket string `json:"bucket"`
 		Key    string `json:"key"`
 	} `json:"source"`
-	Function string `json:"function"`
+	Function *string `json:"function"`
 }
 
 // JobOutput defines the expected output JSON structure.
@@ -58,4 +58,9 @@ type JobOutput struct {
 	FinishedAt time.Time                   `json:"finished_at"`
 	Status     string                      `json:"status"`
 	Response   map[string]*json.RawMessage `json:"response"`
+}
+
+// DispatcherUpdate defines the expected output JSON structure for updating the dispatcher.
+type DispatcherUpdate struct {
+	Status string `json:"status"`
 }

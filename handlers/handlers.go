@@ -40,35 +40,63 @@ import (
 // var validPath = regexp.MustCompile("^/(info|pipeline)/([a-zA-Z0-9]+)$")
 var validPath = regexp.MustCompile("^/(pdal)$")
 
+// UpdateDispatcher handles PDAL status updates.
+func UpdateDispatcher(w http.ResponseWriter, t objects.StatusType) {
+	log.Println("Setting job status as a", t.String())
+	var res objects.DispatcherUpdate
+	res.Status = t.String()
+	// update the dispatcher/job table
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		log.Fatal(err)
+	}
+}
+
 // PdalHandler handles PDAL jobs.
 func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	log.Println("Received request")
+	var res objects.JobOutput
+	res.StartedAt = time.Now()
+
 	// Check that we have a valid path. Is this the correct place to do this?
+	log.Println("Checking to see if", r.URL.Path, "is a valid endpoint")
 	m := validPath.FindStringSubmatch(r.URL.Path)
 	if m == nil {
 		http.NotFound(w, r)
 		return
 	}
 
+	log.Println("Attempt to read the JSON body")
 	// Parse the incoming JSON body, and unmarshal as events.NewData struct.
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		UpdateDispatcher(w, objects.Error)
 		log.Fatal(err)
 	}
 
+	log.Println("Attempt to unmarshal the JSON")
 	var msg objects.JobInput
 	if err := json.Unmarshal(b, &msg); err != nil {
+		UpdateDispatcher(w, objects.Fail)
 		log.Fatal(err)
 	}
+	if msg.Function == nil {
+		UpdateDispatcher(w, objects.Fail)
+		log.Println("Must provide a function")
+		return
+	}
 
-	var res objects.JobOutput
 	res.Input = msg
-	res.StartedAt = time.Now()
 	res.Status = objects.Running.String()
+	// we have successfully parsed the input JSON, update dispatcher/job table that we are now running
 
 	file, err := os.Create("download_file.laz")
 	if err != nil {
 		// errors here should also be JSON-encoded as below
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		res.Status = objects.Error.String()
+		// update the dispatcher/job table
 		return
 	}
 	defer file.Close()
@@ -90,7 +118,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 	log.Println("Downloaded", numBytes, "bytes")
 
-	out, _ := exec.Command("pdal", msg.Function, file.Name()).CombinedOutput()
+	out, _ := exec.Command("pdal", *msg.Function, file.Name()).CombinedOutput()
 
 	// Trim whitespace
 	buffer := new(bytes.Buffer)

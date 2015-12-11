@@ -45,7 +45,7 @@ func TestJobInput(t *testing.T) {
 	if msg.Source.Key != "Bar" {
 		t.Error(msg.Source.Key, "!= `Bar`")
 	}
-	if msg.Function != "Baz" {
+	if *msg.Function != "Baz" {
 		t.Error(msg.Function, "!= `Baz`")
 	}
 }
@@ -78,7 +78,7 @@ func TestJobOutput(t *testing.T) {
 	if msg.Input.Source.Key != "Bar" {
 		t.Error(msg.Input.Source.Key, "!= `Bar`")
 	}
-	if msg.Input.Function != "Baz" {
+	if *msg.Input.Function != "Baz" {
 		t.Error(msg.Input.Function, "!= `Baz`")
 	}
 	// if msg.StartedAt != "2015-12-11T01:31:26.784569058Z" {
