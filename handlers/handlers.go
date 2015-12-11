@@ -46,11 +46,28 @@ func UpdateJobManager(w http.ResponseWriter, t objects.StatusType) {
 	var res objects.JobManagerUpdate
 	res.Status = t.String()
 	// update the JobManager
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		log.Fatal(err)
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	// w.WriteHeader(http.StatusCreated)
+	// if err := json.NewEncoder(w).Encode(res); err != nil {
+	// 	log.Fatal(err)
+	// }
+	url := "http://192.168.99.100:8080/manager"
+
+	jsonStr, err := json.Marshal(res)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
 	}
+	defer resp.Body.Close()
+
+	fmt.Println("response Status:", resp.Status)
+	fmt.Println("response Headers:", resp.Header)
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("response Body:", string(body))
 }
 
 // PdalHandler handles PDAL jobs.

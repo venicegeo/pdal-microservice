@@ -33,11 +33,17 @@ import (
 )
 
 func main() {
+	// For standalone demo purposes, we will start two services: our PDAL service, and a mocked up JobManager.
+
 	router := httprouter.New()
 
+	// Setup the PDAL service.
 	router.POST("/pdal", handlers.PdalHandler)
 
-	log.Println("Starting /pdal on 8080")
+	// Setup the mocked up JobManager.
+	router.POST("/manager", handlers.JobManagerHandler)
+
+	log.Println("Starting on 8080")
 	if err := http.ListenAndServe(":8080", router); err != nil {
 		log.Fatal(err)
 	}
