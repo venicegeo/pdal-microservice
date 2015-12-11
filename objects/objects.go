@@ -60,7 +60,7 @@ type JobOutput struct {
 	Response   map[string]*json.RawMessage `json:"response"`
 }
 
-// DispatcherUpdate defines the expected output JSON structure for updating the dispatcher.
-type DispatcherUpdate struct {
+// JobManagerUpdate defines the expected output JSON structure for updating the JobManager.
+type JobManagerUpdate struct {
 	Status string `json:"status"`
 }

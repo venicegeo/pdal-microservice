@@ -40,12 +40,12 @@ import (
 // var validPath = regexp.MustCompile("^/(info|pipeline)/([a-zA-Z0-9]+)$")
 var validPath = regexp.MustCompile("^/(pdal)$")
 
-// UpdateDispatcher handles PDAL status updates.
-func UpdateDispatcher(w http.ResponseWriter, t objects.StatusType) {
+// UpdateJobManager handles PDAL status updates.
+func UpdateJobManager(w http.ResponseWriter, t objects.StatusType) {
 	log.Println("Setting job status as a", t.String())
-	var res objects.DispatcherUpdate
+	var res objects.JobManagerUpdate
 	res.Status = t.String()
-	// update the dispatcher/job table
+	// update the JobManager
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(res); err != nil {
@@ -71,32 +71,32 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Parse the incoming JSON body, and unmarshal as events.NewData struct.
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		UpdateDispatcher(w, objects.Error)
+		UpdateJobManager(w, objects.Error)
 		log.Fatal(err)
 	}
 
 	log.Println("Attempt to unmarshal the JSON")
 	var msg objects.JobInput
 	if err := json.Unmarshal(b, &msg); err != nil {
-		UpdateDispatcher(w, objects.Fail)
+		UpdateJobManager(w, objects.Fail)
 		log.Fatal(err)
 	}
 	if msg.Function == nil {
-		UpdateDispatcher(w, objects.Fail)
+		UpdateJobManager(w, objects.Fail)
 		log.Println("Must provide a function")
 		return
 	}
 
 	res.Input = msg
 	res.Status = objects.Running.String()
-	// we have successfully parsed the input JSON, update dispatcher/job table that we are now running
+	// we have successfully parsed the input JSON, update JobManager that we are now running
 
 	file, err := os.Create("download_file.laz")
 	if err != nil {
 		// errors here should also be JSON-encoded as below
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		res.Status = objects.Error.String()
-		// update the dispatcher/job table
+		// update the JobManager
 		return
 	}
 	defer file.Close()
