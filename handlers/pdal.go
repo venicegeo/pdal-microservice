@@ -41,16 +41,10 @@ import (
 var validPath = regexp.MustCompile("^/(pdal)$")
 
 // UpdateJobManager handles PDAL status updates.
-func UpdateJobManager(w http.ResponseWriter, t objects.StatusType) {
-	log.Println("Setting job status as a", t.String())
+func UpdateJobManager(t objects.StatusType) {
+	log.Println("Setting job status as \"", t.String(), "\"")
 	var res objects.JobManagerUpdate
 	res.Status = t.String()
-	// update the JobManager
-	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	// w.WriteHeader(http.StatusCreated)
-	// if err := json.NewEncoder(w).Encode(res); err != nil {
-	// 	log.Fatal(err)
-	// }
 	url := "http://192.168.99.100:8080/manager"
 
 	jsonStr, err := json.Marshal(res)
@@ -63,11 +57,6 @@ func UpdateJobManager(w http.ResponseWriter, t objects.StatusType) {
 		panic(err)
 	}
 	defer resp.Body.Close()
-
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
 }
 
 // PdalHandler handles PDAL jobs.
@@ -88,24 +77,24 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Parse the incoming JSON body, and unmarshal as events.NewData struct.
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		UpdateJobManager(w, objects.Error)
+		UpdateJobManager(objects.Error)
 		log.Fatal(err)
 	}
 
 	log.Println("Attempt to unmarshal the JSON")
 	var msg objects.JobInput
 	if err := json.Unmarshal(b, &msg); err != nil {
-		UpdateJobManager(w, objects.Fail)
+		UpdateJobManager(objects.Fail)
 		log.Fatal(err)
 	}
 	if msg.Function == nil {
-		UpdateJobManager(w, objects.Fail)
+		UpdateJobManager(objects.Fail)
 		log.Println("Must provide a function")
 		return
 	}
 
 	res.Input = msg
-	UpdateJobManager(w, objects.Running)
+	UpdateJobManager(objects.Running)
 	// we have successfully parsed the input JSON, update JobManager that we are now running
 
 	file, err := os.Create("download_file.laz")
@@ -146,7 +135,8 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if err = json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
 		log.Fatal(err)
 	}
-	res.Status = objects.Success.String()
+
+	UpdateJobManager(objects.Success)
 	res.FinishedAt = time.Now()
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

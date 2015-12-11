@@ -28,19 +28,15 @@ import (
 
 // JobManagerHandler handles JobManager updates.
 func JobManagerHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	log.Println("JobManager update received")
-
-	log.Println("Attempt to read the JSON body")
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Attempt to unmarshal the JSON")
 	var msg objects.JobManagerUpdate
 	if err := json.Unmarshal(b, &msg); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Job status reported as", msg.Status)
+	log.Println("Job status reported as \"", msg.Status, "\"")
 }
