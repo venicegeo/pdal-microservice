@@ -20,129 +20,22 @@ pdal-microservice provides an endpoint for accepting PDAL requests.
 Examples
 
   $ curl -v --noproxy hostIP -X POST -H "Content-Type: application/json" \
-    -d '{"bucket":"venicegeo-sample-data","key":"pointcloud/samp11-utm.laz"}'
-    http://hostIP:8080/info
+    -d '{"source":{"bucket":"venicegeo-sample-data","key":"pointcloud/samp11-utm.laz"},"function":"info"}' http://hostIP:8080/pdal
 */
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-	"os/exec"
-	"regexp"
-	"time"
 
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/session"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
+	"github.com/venicegeo/pdal-microservice/handlers"
 )
-
-// var validPath = regexp.MustCompile("^/(info|pipeline)/([a-zA-Z0-9]+)$")
-var validPath = regexp.MustCompile("^/(pdal)$")
-
-// JobInput defines the expected into JSON structure.
-// We currently support S3 input (bucket/key), though provider-specific (e.g.,
-// GRiD) may be legitimate.
-type JobInput struct {
-	Source struct {
-		Bucket string `json:"bucket"`
-		Key    string `json:"key"`
-	} `json:"source"`
-	Function string `json:"function"`
-}
-
-// JobOutput defines the expected output JSON structure.
-type JobOutput struct {
-	Input      JobInput                    `json:"input"`
-	StartedAt  time.Time                   `json:"started_at"`
-	FinishedAt time.Time                   `json:"finished_at"`
-	Status     string                      `json:"status"`
-	Response   map[string]*json.RawMessage `json:"response"`
-}
-
-// pdalHandler handles PDAL jobs.
-func pdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	// Check that we have a valid path. Is this the correct place to do this?
-	m := validPath.FindStringSubmatch(r.URL.Path)
-	if m == nil {
-		http.NotFound(w, r)
-		return
-	}
-
-	// Parse the incoming JSON body, and unmarshal as events.NewData struct.
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var msg JobInput
-	if err := json.Unmarshal(b, &msg); err != nil {
-		log.Fatal(err)
-	}
-
-	var res JobOutput
-	res.Input = msg
-	res.StartedAt = time.Now()
-	res.Status = "started"
-
-	file, err := os.Create("download_file.laz")
-	if err != nil {
-		// errors here should also be JSON-encoded as below
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer file.Close()
-
-	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
-	numBytes, err := downloader.Download(file,
-		&s3.GetObjectInput{
-			Bucket: aws.String(msg.Source.Bucket),
-			Key:    aws.String(msg.Source.Key),
-		})
-	if err != nil {
-		// errors here should also be JSON-encoded as below
-		if awsErr, ok := err.(awserr.Error); ok {
-			log.Println("Error:", awsErr.Code(), awsErr.Message())
-		} else {
-			fmt.Println(err.Error())
-		}
-		return
-	}
-	log.Println("Downloaded", numBytes, "bytes")
-
-	out, _ := exec.Command("pdal", msg.Function, file.Name()).CombinedOutput()
-
-	// Trim whitespace
-	buffer := new(bytes.Buffer)
-	if err := json.Compact(buffer, out); err != nil {
-		fmt.Println(err)
-	}
-
-	if err = json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
-		log.Fatal(err)
-	}
-	res.Status = "finished"
-	res.FinishedAt = time.Now()
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		log.Fatal(err)
-	}
-}
 
 func main() {
 	router := httprouter.New()
 
-	router.POST("/pdal", pdalHandler)
+	router.POST("/pdal", handlers.PdalHandler)
 
 	log.Println("Starting /pdal on 8080")
 	if err := http.ListenAndServe(":8080", router); err != nil {
