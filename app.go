@@ -39,7 +39,6 @@ func main() {
 
 	log.Println("Starting /pdal on 8080")
 	if err := http.ListenAndServe(":8080", router); err != nil {
-		// errors here should also be JSON-encoded as above
 		log.Fatal(err)
 	}
 }
