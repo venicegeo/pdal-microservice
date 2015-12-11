@@ -62,7 +62,7 @@ func TestJobOutput(t *testing.T) {
       },
       "started_at": "2015-12-11T01:31:26.784569058Z",
       "finished_at": "2015-12-11T01:31:26.784569058Z",
-      "status": "started",
+      "status": "submitted",
       "response": {"filename":"download_file.laz","pdal_version":"1.1.0 (git-version: 0c36aa)"}
     }`
 
@@ -87,10 +87,31 @@ func TestJobOutput(t *testing.T) {
 	// if msg.FinishedAt != "2015-12-11T01:31:26.784569058Z" {
 	// 	t.Error(msg.FinishedAt, "!= `2015-12-11T01:31:26.784569058Z`")
 	// }
-	// if msg.Status != "started" {
-	// 	t.Error(msg.Status, "!= `started`")
-	// }
+	if msg.Status != "submitted" {
+		t.Error(msg.Status, "!= `submitted`")
+	}
 	// if msg.Response != `{"filename":"download_file.laz","pdal_version":"1.1.0 (git-version: 0c36aa)"}` {
 	// 	t.Error(msg.Response, `!= {"filename":"download_file.laz","pdal_version":"1.1.0 (git-version: 0c36aa)"}`)
 	// }
+}
+
+func TestStatusTypes(t *testing.T) {
+	if objects.Submitted.String() != "submitted" {
+		t.Error(objects.Submitted.String(), "!= `submitted`")
+	}
+	if objects.Running.String() != "running" {
+		t.Error(objects.Running.String(), "!= `running`")
+	}
+	if objects.Success.String() != "success" {
+		t.Error(objects.Success.String(), "!= `success`")
+	}
+	if objects.Cancelled.String() != "cancelled" {
+		t.Error(objects.Cancelled.String(), "!= `cancelled`")
+	}
+	if objects.Error.String() != "error" {
+		t.Error(objects.Error.String(), "!= `error`")
+	}
+	if objects.Fail.String() != "fail" {
+		t.Error(objects.Fail.String(), "!= `fail`")
+	}
 }

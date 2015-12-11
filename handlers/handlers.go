@@ -63,7 +63,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var res objects.JobOutput
 	res.Input = msg
 	res.StartedAt = time.Now()
-	res.Status = "started"
+	res.Status = objects.Running.String()
 
 	file, err := os.Create("download_file.laz")
 	if err != nil {
@@ -101,7 +101,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if err = json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
 		log.Fatal(err)
 	}
-	res.Status = "finished"
+	res.Status = objects.Success.String()
 	res.FinishedAt = time.Now()
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

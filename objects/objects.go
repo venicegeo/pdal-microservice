@@ -21,6 +21,25 @@ import (
 	"time"
 )
 
+// StatusType is a string describing the state of the job.
+type StatusType int
+
+// Enumerate valid StatusType values.
+const (
+	Submitted StatusType = iota
+	Running
+	Success
+	Cancelled
+	Error
+	Fail
+)
+
+var statuses = [...]string{"submitted", "running", "success", "cancelled", "error", "fail"}
+
+func (status StatusType) String() string {
+	return statuses[status]
+}
+
 // JobInput defines the expected into JSON structure.
 // We currently support S3 input (bucket/key), though provider-specific (e.g.,
 // GRiD) may be legitimate.
