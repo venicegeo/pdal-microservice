@@ -109,12 +109,12 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			Key:    aws.String(msg.Source.Key),
 		})
 	if err != nil {
-		// errors here should also be JSON-encoded as below
 		if awsErr, ok := err.(awserr.Error); ok {
 			log.Println("Error:", awsErr.Code(), awsErr.Message())
 		} else {
 			fmt.Println(err.Error())
 		}
+		UpdateJobManager(objects.Error)
 		return
 	}
 	log.Println("Downloaded", numBytes, "bytes")

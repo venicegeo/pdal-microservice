@@ -19,7 +19,7 @@ pdal-microservice provides an endpoint for accepting PDAL requests.
 
 Examples
 
-  $ curl -v --noproxy hostIP -X POST -H "Content-Type: application/json" \
+  $ curl -v -X POST -H "Content-Type: application/json" \
     -d '{"source":{"bucket":"venicegeo-sample-data","key":"pointcloud/samp11-utm.laz"},"function":"info"}' http://hostIP:8080/pdal
 */
 package main

@@ -138,3 +138,26 @@ Downloaded file download_file.laz 99563 bytes
 # Way Forward
 
 Clearly, this is pretty simplistic. We've hardcoded lots of things and have skimped on the error checking. But it demonstrates the capability. Moving forward, we will begin to hash out details of how the PDAL tasks are delivered and make it do some more interesting things, namely executing PDAL pipelines.
+
+# Register Service
+
+```json
+{
+  "name": "pdal",
+  "serviceID": 0,
+  "desc": "Process point cloud data using PDAL.",
+  "url": "https://api.piazzageo.io/v1/pdal",
+  "poc": "",
+  "networkAvailable": "TBD",
+  "tags": "point cloud, pdal, lidar",
+  "classType": "Unclassified",
+  "parms": "TBD",
+  "termData": "TBD",
+  "availability": "UP",
+  "serviceQoS": "Development",
+  "credentialsRequired": false,
+  "clientCert": false,
+  "preAuthRequired": false,
+  "contracts": ""
+}
+```
