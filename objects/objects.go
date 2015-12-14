@@ -53,12 +53,12 @@ type JobInput struct {
 
 // JobOutput defines the expected output JSON structure.
 type JobOutput struct {
-	Input      JobInput  `json:"input"`
-	StartedAt  time.Time `json:"started_at"`
-	FinishedAt time.Time `json:"finished_at"`
-	// Do we really need to have status repeated here? It seems like in the final output, it may boil down to success/error/fail anyway.
-	Status   string                      `json:"status"`
-	Response map[string]*json.RawMessage `json:"response"`
+	Input      JobInput                    `json:"input"`
+	StartedAt  time.Time                   `json:"started_at"`
+	FinishedAt time.Time                   `json:"finished_at"`
+	Code       int                         `json:"code"`
+	Message    string                      `json:"message"`
+	Response   map[string]*json.RawMessage `json:"response"`
 }
 
 // JobManagerUpdate defines the expected output JSON structure for updating the JobManager.
