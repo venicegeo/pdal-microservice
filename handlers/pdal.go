@@ -26,6 +26,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
@@ -72,6 +73,10 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 	if msg.Function == nil {
 		utils.BadRequest(w, r, res, "Must provide a function")
+		return
+	}
+	if !(strings.Compare(*msg.Function, "info") == 0 || strings.Compare(*msg.Function, "pipeline") == 0) {
+		utils.BadRequest(w, r, res, "Only the info and pipeline functions are supported at this time")
 		return
 	}
 

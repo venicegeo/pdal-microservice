@@ -68,6 +68,27 @@ func TestNoFunctionField(t *testing.T) {
 	}
 }
 
+func TestBadFunction(t *testing.T) {
+	userJSON := `{
+		"source":
+		{
+			"bucket": "venicegeo-sample-data",
+			"key": "pointcloud/samp71-utm.laz"
+		},
+		"function": "fail"
+	}`
+	reader := strings.NewReader(userJSON)
+	router := httprouter.New()
+	router.POST("/pdal", PdalHandler)
+	req, _ := http.NewRequest("POST", "/pdal", reader)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	fmt.Println(w.Body)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("StatusBadRequest expected: %d", w.Code)
+	}
+}
+
 func TestBadBucket(t *testing.T) {
 	userJSON := `{
 		"source":
