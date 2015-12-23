@@ -107,16 +107,22 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 	log.Println("Downloaded", numBytes, "bytes")
 
-	out, _ := exec.Command("pdal", *msg.Function, file.Name()).CombinedOutput()
+	if strings.Compare(*msg.Function, "info") == 0 {
+		out, _ := exec.Command("pdal", *msg.Function, file.Name()).CombinedOutput()
 
-	// Trim whitespace
-	buffer := new(bytes.Buffer)
-	if err := json.Compact(buffer, out); err != nil {
-		fmt.Println(err)
+		// Trim whitespace
+		buffer := new(bytes.Buffer)
+		if err := json.Compact(buffer, out); err != nil {
+			fmt.Println(err)
+		}
+
+		if err = json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
+			log.Fatal(err)
+		}
 	}
 
-	if err = json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
-		log.Fatal(err)
+	if strings.Compare(*msg.Function, "pipeline") == 0 {
+		fmt.Println("pipeline not implemented yet")
 	}
 
 	res.FinishedAt = time.Now()
