@@ -26,7 +26,6 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
@@ -70,28 +69,25 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		utils.BadRequest(w, r, res, "Must provide a function")
 		return
 	}
-	if !(strings.Compare(*msg.Function, "info") == 0 || strings.Compare(*msg.Function, "pipeline") == 0) {
-		utils.BadRequest(w, r, res, "Only the info and pipeline functions are supported at this time")
-		return
-	}
 
 	res.Input = msg
 	utils.UpdateJobManager(objects.Running, r)
 
-	file, err := os.Create("download_file.laz")
-	if err != nil {
-		utils.InternalError(w, r, res, err.Error())
-		return
-	}
-	defer file.Close()
+	switch *msg.Function {
+	case "info":
+		file, err := os.Create("download_file.laz")
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+		defer file.Close()
 
-	if err := utils.S3Download(file, msg.Source.Bucket, msg.Source.Key); err != nil {
-		utils.InternalError(w, r, res, err.Error())
-		return
-	}
+		err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
 
-	switch {
-	case strings.Compare(*msg.Function, "info") == 0:
 		out, _ := exec.Command("pdal", *msg.Function, file.Name()).CombinedOutput()
 
 		// Trim whitespace
@@ -104,8 +100,13 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			log.Fatal(err)
 		}
 
-	case strings.Compare(*msg.Function, "pipeline") == 0:
+	case "pipeline":
 		fmt.Println("pipeline not implemented yet")
+
+	default:
+		utils.BadRequest(w, r, res,
+			"Only the info and pipeline functions are supported at this time")
+		return
 	}
 
 	res.FinishedAt = time.Now()
