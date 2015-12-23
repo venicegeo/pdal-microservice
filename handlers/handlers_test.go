@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package app_test
+package handlers
 
 import (
 	"fmt"
@@ -24,7 +24,6 @@ import (
 	"testing"
 
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
-	"github.com/venicegeo/pdal-microservice/handlers"
 )
 
 func TestBasicInfo(t *testing.T) {
@@ -38,7 +37,7 @@ func TestBasicInfo(t *testing.T) {
 	}`
 	reader := strings.NewReader(userJSON)
 	router := httprouter.New()
-	router.POST("/pdal", handlers.PdalHandler)
+	router.POST("/pdal", PdalHandler)
 	req, _ := http.NewRequest("POST", "/pdal", reader)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -59,7 +58,7 @@ func TestNoFunctionField(t *testing.T) {
 	}`
 	reader := strings.NewReader(userJSON)
 	router := httprouter.New()
-	router.POST("/pdal", handlers.PdalHandler)
+	router.POST("/pdal", PdalHandler)
 	req, _ := http.NewRequest("POST", "/pdal", reader)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -80,7 +79,7 @@ func TestBadBucket(t *testing.T) {
 	}`
 	reader := strings.NewReader(userJSON)
 	router := httprouter.New()
-	router.POST("/pdal", handlers.PdalHandler)
+	router.POST("/pdal", PdalHandler)
 	req, _ := http.NewRequest("POST", "/pdal", reader)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -101,7 +100,7 @@ func TestBadKey(t *testing.T) {
 	}`
 	reader := strings.NewReader(userJSON)
 	router := httprouter.New()
-	router.POST("/pdal", handlers.PdalHandler)
+	router.POST("/pdal", PdalHandler)
 	req, _ := http.NewRequest("POST", "/pdal", reader)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -115,7 +114,7 @@ func TestEmptyJSON(t *testing.T) {
 	userJSON := `{}`
 	reader := strings.NewReader(userJSON)
 	router := httprouter.New()
-	router.POST("/pdal", handlers.PdalHandler)
+	router.POST("/pdal", PdalHandler)
 	req, _ := http.NewRequest("POST", "/pdal", reader)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -127,7 +126,7 @@ func TestEmptyJSON(t *testing.T) {
 
 func TestNoJSON(t *testing.T) {
 	router := httprouter.New()
-	router.POST("/pdal", handlers.PdalHandler)
+	router.POST("/pdal", PdalHandler)
 	req, _ := http.NewRequest("POST", "/pdal", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -139,7 +138,7 @@ func TestNoJSON(t *testing.T) {
 
 func TestBadEndpoint(t *testing.T) {
 	router := httprouter.New()
-	router.POST("/ladp", handlers.PdalHandler)
+	router.POST("/ladp", PdalHandler)
 	req, _ := http.NewRequest("POST", "/ladp", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
