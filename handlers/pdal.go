@@ -92,6 +92,32 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	case "pipeline":
 		fmt.Println("pipeline not implemented yet")
 
+	case "ground":
+		file, err := os.Create("download_file.laz")
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+		defer file.Close()
+
+		fileOut, err := os.Create("output_file.laz")
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+		defer fileOut.Close()
+
+		err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+
+		out, _ := exec.Command("pdal", "translate", file.Name(), fileOut.Name(),
+			"ground").CombinedOutput()
+
+		fmt.Println(string(out))
+
 	default:
 		utils.BadRequest(w, r, res,
 			"Only the info and pipeline functions are supported at this time")

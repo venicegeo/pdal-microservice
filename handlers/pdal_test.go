@@ -68,6 +68,27 @@ func TestBasicPipeline(t *testing.T) {
 	}
 }
 
+func TestBasicGround(t *testing.T) {
+	userJSON := `{
+		"source":
+		{
+			"bucket": "venicegeo-sample-data",
+			"key": "pointcloud/samp71-utm.laz"
+		},
+		"function": "ground"
+	}`
+	reader := strings.NewReader(userJSON)
+	router := httprouter.New()
+	router.POST("/pdal", PdalHandler)
+	req, _ := http.NewRequest("POST", "/pdal", reader)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	fmt.Println(w.Body)
+	if w.Code != http.StatusOK {
+		t.Errorf("StatusOK expected: %d", w.Code)
+	}
+}
+
 func TestNoFunctionField(t *testing.T) {
 	userJSON := `{
 		"source":
