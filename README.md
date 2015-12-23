@@ -10,128 +10,156 @@ While not the only game in town, PDAL will provide the heavy lifting for most of
 
 ```console
 $ git clone https://github.com/venicegeo/pdal-microservice
-$ ./build.sh
+$ scripts/build_and_run.sh
 ```
 
 The build script will first compile the Go code in a temporary container. The resulting static Go binary is then copied into our `venicegeo/pdal-microservice` image during the `docker build` step. Finally, the service is started on port 8080, mounting your `~/.aws/credentials` to the image.
 
 # Example
 
-This initial example is pretty simple. The service is downloading an LAZ file from our S3 bucket and then calling
+Our first example posts the following JSON to the `/pdal` endpoint.
+
+```json
+{  
+    "source":{  
+        "bucket":"venicegeo-sample-data",
+        "key":"pointcloud/samp71-utm.laz"
+    },
+    "function":"info"
+}
+```
+
+It can be run from the terminal by typing
 
 ```console
-$ pdal info <filename> --summary
+$ scripts/run-s3-info.sh
+```
+
+Internally, the service is simply downloading an LAZ file from our S3 bucket and then calling
+
+```console
+$ pdal info <filename>
 ```
 
 and returning the result. As of this writing, it should look something like
 
 ```json
-Downloaded file download_file.laz 99563 bytes
-{
-  "filename": "download_file.laz",
-  "pdal_version": "1.1.0 (git-version: 0c36aa)",
-  "stats":
-  {
-    "statistic":
-    [
-      {
-        "average": 512767.0106,
-        "count": 38010,
-        "maximum": 512834.76,
-        "minimum": 512700.87,
-        "name": "X",
-        "position": 0
-      },
-      {
-        "average": 5403707.591,
-        "count": 38010,
-        "maximum": 5403849.99,
-        "minimum": 5403547.26,
-        "name": "Y",
-        "position": 1
-      },
-      {
-        "average": 356.1714336,
-        "count": 38010,
-        "maximum": 404.08,
-        "minimum": 295.25,
-        "name": "Z",
-        "position": 2
-      },
-      {
-        "average": 0.4268350434,
-        "count": 38010,
-        "maximum": 1,
-        "minimum": 0,
-        "name": "Intensity",
-        "position": 3
-      },
-      {
-        "average": 1,
-        "count": 38010,
-        "maximum": 1,
-        "minimum": 1,
-        "name": "ReturnNumber",
-        "position": 4
-      },
-      {
-        "average": 1,
-        "count": 38010,
-        "maximum": 1,
-        "minimum": 1,
-        "name": "NumberOfReturns",
-        "position": 5
-      },
-      {
-        "average": 0,
-        "count": 38010,
-        "maximum": 0,
-        "minimum": 0,
-        "name": "ScanDirectionFlag",
-        "position": 6
-      },
-      {
-        "average": 0,
-        "count": 38010,
-        "maximum": 0,
-        "minimum": 0,
-        "name": "EdgeOfFlightLine",
-        "position": 7
-      },
-      {
-        "average": 1.146329913,
-        "count": 38010,
-        "maximum": 2,
-        "minimum": 0,
-        "name": "Classification",
-        "position": 8
-      },
-      {
-        "average": 0,
-        "count": 38010,
-        "maximum": 0,
-        "minimum": 0,
-        "name": "ScanAngleRank",
-        "position": 9
-      },
-      {
-        "average": 0,
-        "count": 38010,
-        "maximum": 0,
-        "minimum": 0,
-        "name": "UserData",
-        "position": 10
-      },
-      {
-        "average": 0,
-        "count": 38010,
-        "maximum": 0,
-        "minimum": 0,
-        "name": "PointSourceId",
-        "position": 11
-      }
-    ]
-  }
+{  
+    "input":{  
+        "source":{  
+            "bucket":"venicegeo-sample-data",
+            "key":"pointcloud/samp71-utm.laz"
+        },
+        "function":"info"
+    },
+    "started_at":"2015-12-23T18:07:36.987565884Z",
+    "finished_at":"2015-12-23T18:07:38.111658707Z",
+    "code":200,
+    "message":"Success!",
+    "response":{  
+        "filename":"download_file.laz",
+        "pdal_version":"1.1.0 (git-version: 0c36aa)",
+        "stats":{  
+            "statistic":[  
+                {  
+                    "average":496348.6372,
+                    "count":15645,
+                    "maximum":496543.8,
+                    "minimum":496148.97,
+                    "name":"X",
+                    "position":0
+                },
+                {  
+                    "average":5422226.095,
+                    "count":15645,
+                    "maximum":5422342.88,
+                    "minimum":5422121.76,
+                    "name":"Y",
+                    "position":1
+                },
+                {  
+                    "average":300.0687677,
+                    "count":15645,
+                    "maximum":309.55,
+                    "minimum":293.23,
+                    "name":"Z",
+                    "position":2
+                },
+                {  
+                    "average":0.113135187,
+                    "count":15645,
+                    "maximum":1,
+                    "minimum":0,
+                    "name":"Intensity",
+                    "position":3
+                },
+                {  
+                    "average":1,
+                    "count":15645,
+                    "maximum":1,
+                    "minimum":1,
+                    "name":"ReturnNumber",
+                    "position":4
+                },
+                {  
+                    "average":1,
+                    "count":15645,
+                    "maximum":1,
+                    "minimum":1,
+                    "name":"NumberOfReturns",
+                    "position":5
+                },
+                {  
+                    "average":0,
+                    "count":15645,
+                    "maximum":0,
+                    "minimum":0,
+                    "name":"ScanDirectionFlag",
+                    "position":6
+                },
+                {  
+                    "average":0,
+                    "count":15645,
+                    "maximum":0,
+                    "minimum":0,
+                    "name":"EdgeOfFlightLine",
+                    "position":7
+                },
+                {  
+                    "average":1.773729626,
+                    "count":15645,
+                    "maximum":2,
+                    "minimum":0,
+                    "name":"Classification",
+                    "position":8
+                },
+                {  
+                    "average":0,
+                    "count":15645,
+                    "maximum":0,
+                    "minimum":0,
+                    "name":"ScanAngleRank",
+                    "position":9
+                },
+                {  
+                    "average":0,
+                    "count":15645,
+                    "maximum":0,
+                    "minimum":0,
+                    "name":"UserData",
+                    "position":10
+                },
+                {  
+                    "average":0,
+                    "count":15645,
+                    "maximum":0,
+                    "minimum":0,
+                    "name":"PointSourceId",
+                    "position":11
+                }
+            ]
+        }
+    }
 }
 ```
 
