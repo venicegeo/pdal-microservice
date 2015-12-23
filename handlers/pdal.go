@@ -113,10 +113,14 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			return
 		}
 
-		out, _ := exec.Command("pdal", "translate", file.Name(), fileOut.Name(),
-			"ground").CombinedOutput()
+		exec.Command("pdal", "translate", file.Name(), fileOut.Name(),
+			"ground", "--filters.ground.extract=true", "--filters.ground.classify=false").CombinedOutput()
 
-		fmt.Println(string(out))
+		err = utils.S3Upload(fileOut, "venicegeo-sample-data", "temp/foo.laz")
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
 
 	default:
 		utils.BadRequest(w, r, res,

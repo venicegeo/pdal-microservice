@@ -120,3 +120,25 @@ func S3Download(file *os.File, bucket, key string) error {
 	log.Println("Downloaded", numBytes, "bytes")
 	return nil
 }
+
+/*
+S3Upload uploads a file to an S3 bucket.
+*/
+func S3Upload(file *os.File, bucket, key string) error {
+	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
+	result, err := uploader.Upload(&s3manager.UploadInput{
+		Body:   file,
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		if awsErr, ok := err.(awserr.Error); ok {
+			log.Println("Error:", awsErr.Code(), awsErr.Message())
+		} else {
+			fmt.Println(err.Error())
+		}
+		return err
+	}
+	log.Println("Successfully uploaded to", result.Location)
+	return nil
+}
