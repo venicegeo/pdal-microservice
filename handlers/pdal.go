@@ -107,7 +107,8 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 	log.Println("Downloaded", numBytes, "bytes")
 
-	if strings.Compare(*msg.Function, "info") == 0 {
+	switch {
+	case strings.Compare(*msg.Function, "info") == 0:
 		out, _ := exec.Command("pdal", *msg.Function, file.Name()).CombinedOutput()
 
 		// Trim whitespace
@@ -119,9 +120,8 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		if err = json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
 			log.Fatal(err)
 		}
-	}
 
-	if strings.Compare(*msg.Function, "pipeline") == 0 {
+	case strings.Compare(*msg.Function, "pipeline") == 0:
 		fmt.Println("pipeline not implemented yet")
 	}
 
