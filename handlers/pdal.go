@@ -35,78 +35,11 @@ import (
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pdal-microservice/objects"
+	"github.com/venicegeo/pdal-microservice/responses"
 )
 
 // var validPath = regexp.MustCompile("^/(info|pipeline)/([a-zA-Z0-9]+)$")
 var validPath = regexp.MustCompile("^/(pdal)$")
-
-// UpdateJobManager handles PDAL status updates.
-func UpdateJobManager(t objects.StatusType, r *http.Request) {
-	log.Println("Setting job status as \"", t.String(), "\"")
-	// var res objects.JobManagerUpdate
-	// res.Status = t.String()
-	// //	url := "http://192.168.99.100:8080/manager"
-	// url := r.URL.Path + `/manager`
-	//
-	// jsonStr, err := json.Marshal(res)
-	// req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-	// req.Header.Set("Content-Type", "application/json")
-	//
-	// client := &http.Client{}
-	// resp, err := client.Do(req)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer resp.Body.Close()
-}
-
-/*
-BadRequest handles bad requests.
-
-All bad requests result in a failure in the eyes of the JobManager. The ResponseWriter echos some key aspects of the Request (e.g., input, start time) and appends StatusBadRequest (400) as well as a message to the JobOutput, which is returned as JSON.
-*/
-func BadRequest(w http.ResponseWriter, r *http.Request, res objects.JobOutput, message string) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusBadRequest)
-	res.Code = http.StatusBadRequest
-	res.Message = message
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		log.Fatal(err)
-	}
-	UpdateJobManager(objects.Fail, r)
-}
-
-/*
-InternalError handles internal server errors.
-
-All internal server errors result in an error in the eyes of the JobManager. The ResponseWriter echos some key aspects of the Request (e.g., input, start time) and appends StatusInternalServerError (500) as well as a message to the JobOutput, which is returned as JSON.
-*/
-func InternalError(w http.ResponseWriter, r *http.Request, res objects.JobOutput, message string) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusInternalServerError)
-	res.Code = http.StatusInternalServerError
-	res.Message = message
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		log.Fatal(err)
-	}
-	UpdateJobManager(objects.Error, r)
-}
-
-/*
-Okay handles successful calls.
-
-All successful calls result in sucess in the eyes of the JobManager. The ResponseWriter echos some key aspects of the Request (e.g., input, start time) and appends StatusOK (200) as well as a message to the JobOutput, which is returned as JSON.
-*/
-func Okay(w http.ResponseWriter, r *http.Request, res objects.JobOutput, message string) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	res.Code = http.StatusOK
-	res.Message = message
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		log.Fatal(err)
-	}
-	UpdateJobManager(objects.Success, r)
-}
 
 // PdalHandler handles PDAL jobs.
 func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -116,38 +49,38 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Check that we have a valid path. Is this the correct place to do this?
 	m := validPath.FindStringSubmatch(r.URL.Path)
 	if m == nil {
-		BadRequest(w, r, res, "Endpoint does not exist")
+		responses.BadRequest(w, r, res, "Endpoint does not exist")
 		return
 	}
 
 	if r.Body == nil {
-		BadRequest(w, r, res, "No JSON")
+		responses.BadRequest(w, r, res, "No JSON")
 		return
 	}
 
 	// Parse the incoming JSON body, and unmarshal as events.NewData struct.
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		InternalError(w, r, res, err.Error())
+		responses.InternalError(w, r, res, err.Error())
 		return
 	}
 
 	var msg objects.JobInput
 	if err := json.Unmarshal(b, &msg); err != nil {
-		BadRequest(w, r, res, err.Error())
+		responses.BadRequest(w, r, res, err.Error())
 		return
 	}
 	if msg.Function == nil {
-		BadRequest(w, r, res, "Must provide a function")
+		responses.BadRequest(w, r, res, "Must provide a function")
 		return
 	}
 
 	res.Input = msg
-	UpdateJobManager(objects.Running, r)
+	responses.UpdateJobManager(objects.Running, r)
 
 	file, err := os.Create("download_file.laz")
 	if err != nil {
-		InternalError(w, r, res, err.Error())
+		responses.InternalError(w, r, res, err.Error())
 		return
 	}
 	defer file.Close()
@@ -164,7 +97,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		} else {
 			fmt.Println(err.Error())
 		}
-		InternalError(w, r, res, err.Error())
+		responses.InternalError(w, r, res, err.Error())
 		return
 	}
 	log.Println("Downloaded", numBytes, "bytes")
@@ -182,5 +115,5 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	res.FinishedAt = time.Now()
-	Okay(w, r, res, "Success!")
+	responses.Okay(w, r, res, "Success!")
 }
