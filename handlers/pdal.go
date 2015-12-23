@@ -35,7 +35,7 @@ import (
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pdal-microservice/objects"
-	"github.com/venicegeo/pdal-microservice/responses"
+	"github.com/venicegeo/pdal-microservice/utils"
 )
 
 // var validPath = regexp.MustCompile("^/(info|pipeline)/([a-zA-Z0-9]+)$")
@@ -49,38 +49,38 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Check that we have a valid path. Is this the correct place to do this?
 	m := validPath.FindStringSubmatch(r.URL.Path)
 	if m == nil {
-		responses.BadRequest(w, r, res, "Endpoint does not exist")
+		utils.BadRequest(w, r, res, "Endpoint does not exist")
 		return
 	}
 
 	if r.Body == nil {
-		responses.BadRequest(w, r, res, "No JSON")
+		utils.BadRequest(w, r, res, "No JSON")
 		return
 	}
 
 	// Parse the incoming JSON body, and unmarshal as events.NewData struct.
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		responses.InternalError(w, r, res, err.Error())
+		utils.InternalError(w, r, res, err.Error())
 		return
 	}
 
 	var msg objects.JobInput
 	if err := json.Unmarshal(b, &msg); err != nil {
-		responses.BadRequest(w, r, res, err.Error())
+		utils.BadRequest(w, r, res, err.Error())
 		return
 	}
 	if msg.Function == nil {
-		responses.BadRequest(w, r, res, "Must provide a function")
+		utils.BadRequest(w, r, res, "Must provide a function")
 		return
 	}
 
 	res.Input = msg
-	responses.UpdateJobManager(objects.Running, r)
+	utils.UpdateJobManager(objects.Running, r)
 
 	file, err := os.Create("download_file.laz")
 	if err != nil {
-		responses.InternalError(w, r, res, err.Error())
+		utils.InternalError(w, r, res, err.Error())
 		return
 	}
 	defer file.Close()
@@ -97,7 +97,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		} else {
 			fmt.Println(err.Error())
 		}
-		responses.InternalError(w, r, res, err.Error())
+		utils.InternalError(w, r, res, err.Error())
 		return
 	}
 	log.Println("Downloaded", numBytes, "bytes")
@@ -115,5 +115,5 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	res.FinishedAt = time.Now()
-	responses.Okay(w, r, res, "Success!")
+	utils.Okay(w, r, res, "Success!")
 }

@@ -15,9 +15,8 @@ limitations under the License.
 */
 
 /*
-Package responses provides some canned responses for the PDAL microservices.
+Package utils provides various utilities that are used throughout the project.
 
-We currently support only StatusOK, StatusBadRequest, and
-StatusInternalServerError.
+Provide functions to return canned responses: StatusOK, StatusBadRequest, and StatusInternalServerError.
 */
-package responses
+package utils
