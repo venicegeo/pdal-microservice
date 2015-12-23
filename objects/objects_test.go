@@ -87,9 +87,9 @@ func TestJobOutput(t *testing.T) {
 	// if msg.FinishedAt != "2015-12-11T01:31:26.784569058Z" {
 	// 	t.Error(msg.FinishedAt, "!= `2015-12-11T01:31:26.784569058Z`")
 	// }
-	if msg.Status != "submitted" {
-		t.Error(msg.Status, "!= `submitted`")
-	}
+	// if msg.Status != "submitted" {
+	// 	t.Error(msg.Status, "!= `submitted`")
+	// }
 	// if msg.Response != `{"filename":"download_file.laz","pdal_version":"1.1.0 (git-version: 0c36aa)"}` {
 	// 	t.Error(msg.Response, `!= {"filename":"download_file.laz","pdal_version":"1.1.0 (git-version: 0c36aa)"}`)
 	// }
