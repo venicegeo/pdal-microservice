@@ -163,6 +163,27 @@ and returning the result. As of this writing, it should look something like
 }
 ```
 
+# Testing
+
+Nothing fancy here. Just run
+
+```console
+$ go test ./...
+```
+
+Or, if you are interested in code coverage
+
+```console
+$ go test ./... -cover
+```
+
+And, for more detailed coverage info
+
+```console
+$ go test ./... -coverprofile=coverage.out
+$ go tool cover -html=coverage.out
+```
+
 # Way Forward
 
 Clearly, this is pretty simplistic. We've hardcoded lots of things and have skimped on the error checking. But it demonstrates the capability. Moving forward, we will begin to hash out details of how the PDAL tasks are delivered and make it do some more interesting things, namely executing PDAL pipelines.
