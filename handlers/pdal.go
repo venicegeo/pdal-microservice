@@ -60,7 +60,11 @@ func UpdateJobManager(t objects.StatusType, r *http.Request) {
 	// defer resp.Body.Close()
 }
 
-// BadRequest handles bad requests.
+/*
+BadRequest handles bad requests.
+
+All bad requests result in a failure in the eyes of the JobManager. The ResponseWriter echos some key aspects of the Request (e.g., input, start time) and appends StatusBadRequest (400) as well as a message to the JobOutput, which is returned as JSON.
+*/
 func BadRequest(w http.ResponseWriter, r *http.Request, res objects.JobOutput, message string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusBadRequest)
@@ -72,7 +76,11 @@ func BadRequest(w http.ResponseWriter, r *http.Request, res objects.JobOutput, m
 	UpdateJobManager(objects.Fail, r)
 }
 
-// InternalError handles internal server errors.
+/*
+InternalError handles internal server errors.
+
+All internal server errors result in an error in the eyes of the JobManager. The ResponseWriter echos some key aspects of the Request (e.g., input, start time) and appends StatusInternalServerError (500) as well as a message to the JobOutput, which is returned as JSON.
+*/
 func InternalError(w http.ResponseWriter, r *http.Request, res objects.JobOutput, message string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusInternalServerError)
@@ -84,7 +92,11 @@ func InternalError(w http.ResponseWriter, r *http.Request, res objects.JobOutput
 	UpdateJobManager(objects.Error, r)
 }
 
-// Okay handles good requests.
+/*
+Okay handles successful calls.
+
+All successful calls result in sucess in the eyes of the JobManager. The ResponseWriter echos some key aspects of the Request (e.g., input, start time) and appends StatusOK (200) as well as a message to the JobOutput, which is returned as JSON.
+*/
 func Okay(w http.ResponseWriter, r *http.Request, res objects.JobOutput, message string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -129,8 +141,6 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		BadRequest(w, r, res, "Must provide a function")
 		return
 	}
-
-	log.Println("/pdal processing the data in", msg.Source.Bucket, "/", msg.Source.Key, "with", *msg.Function)
 
 	res.Input = msg
 	UpdateJobManager(objects.Running, r)
