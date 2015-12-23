@@ -25,7 +25,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"regexp"
 	"time"
 
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
@@ -33,20 +32,10 @@ import (
 	"github.com/venicegeo/pdal-microservice/utils"
 )
 
-// var validPath = regexp.MustCompile("^/(info|pipeline)/([a-zA-Z0-9]+)$")
-var validPath = regexp.MustCompile("^/(pdal)$")
-
 // PdalHandler handles PDAL jobs.
 func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var res objects.JobOutput
 	res.StartedAt = time.Now()
-
-	// Check that we have a valid path. Is this the correct place to do this?
-	m := validPath.FindStringSubmatch(r.URL.Path)
-	if m == nil {
-		utils.BadRequest(w, r, res, "Endpoint does not exist")
-		return
-	}
 
 	if r.Body == nil {
 		utils.BadRequest(w, r, res, "No JSON")
