@@ -184,6 +184,16 @@ $ go test ./... -coverprofile=coverage.out
 $ go tool cover -html=coverage.out
 ```
 
+# Modifying
+
+We use Godeps to aid in deployment. Upon saving, run
+
+```console
+$ godep save -r ./...
+```
+
+to update the Godeps folder and all import paths.
+
 # Way Forward
 
 Clearly, this is pretty simplistic. We've hardcoded lots of things and have skimped on the error checking. But it demonstrates the capability. Moving forward, we will begin to hash out details of how the PDAL tasks are delivered and make it do some more interesting things, namely executing PDAL pipelines.
