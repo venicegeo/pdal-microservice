@@ -29,11 +29,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/session"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pdal-microservice/objects"
 	"github.com/venicegeo/pdal-microservice/utils"
@@ -90,22 +85,10 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 	defer file.Close()
 
-	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
-	numBytes, err := downloader.Download(file,
-		&s3.GetObjectInput{
-			Bucket: aws.String(msg.Source.Bucket),
-			Key:    aws.String(msg.Source.Key),
-		})
-	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			log.Println("Error:", awsErr.Code(), awsErr.Message())
-		} else {
-			fmt.Println(err.Error())
-		}
+	if err := utils.S3Download(file, msg.Source.Bucket, msg.Source.Key); err != nil {
 		utils.InternalError(w, r, res, err.Error())
 		return
 	}
-	log.Println("Downloaded", numBytes, "bytes")
 
 	switch {
 	case strings.Compare(*msg.Function, "info") == 0:

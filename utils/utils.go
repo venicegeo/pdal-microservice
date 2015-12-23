@@ -18,9 +18,16 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
+	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/session"
+	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3"
+	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/venicegeo/pdal-microservice/objects"
 )
 
@@ -90,4 +97,26 @@ func Okay(w http.ResponseWriter, r *http.Request, res objects.JobOutput, message
 		log.Fatal(err)
 	}
 	UpdateJobManager(objects.Success, r)
+}
+
+/*
+S3Download downloads a file from an S3 bucket/key.
+*/
+func S3Download(file *os.File, bucket, key string) error {
+	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
+	numBytes, err := downloader.Download(file,
+		&s3.GetObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+		})
+	if err != nil {
+		if awsErr, ok := err.(awserr.Error); ok {
+			log.Println("Error:", awsErr.Code(), awsErr.Message())
+		} else {
+			fmt.Println(err.Error())
+		}
+		return err
+	}
+	log.Println("Downloaded", numBytes, "bytes")
+	return nil
 }
