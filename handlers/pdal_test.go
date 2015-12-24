@@ -89,6 +89,69 @@ func TestBasicGround(t *testing.T) {
 	}
 }
 
+func TestBasicHeight(t *testing.T) {
+	userJSON := `{
+		"source":
+		{
+			"bucket": "venicegeo-sample-data",
+			"key": "pointcloud/samp71-utm.laz"
+		},
+		"function": "height"
+	}`
+	reader := strings.NewReader(userJSON)
+	router := httprouter.New()
+	router.POST("/pdal", PdalHandler)
+	req, _ := http.NewRequest("POST", "/pdal", reader)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	fmt.Println(w.Body)
+	if w.Code != http.StatusOK {
+		t.Errorf("StatusOK expected: %d", w.Code)
+	}
+}
+
+func TestGroundOptions(t *testing.T) {
+	userJSON := `{
+		"source":
+		{
+			"bucket": "venicegeo-sample-data",
+			"key": "pointcloud/samp71-utm.laz"
+		},
+		"function": "groundopts"
+	}`
+	reader := strings.NewReader(userJSON)
+	router := httprouter.New()
+	router.POST("/pdal", PdalHandler)
+	req, _ := http.NewRequest("POST", "/pdal", reader)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	fmt.Println(w.Body)
+	if w.Code != http.StatusOK {
+		t.Errorf("StatusOK expected: %d", w.Code)
+	}
+}
+
+func TestDrivers(t *testing.T) {
+	userJSON := `{
+		"source":
+		{
+			"bucket": "venicegeo-sample-data",
+			"key": "pointcloud/samp71-utm.laz"
+		},
+		"function": "drivers"
+	}`
+	reader := strings.NewReader(userJSON)
+	router := httprouter.New()
+	router.POST("/pdal", PdalHandler)
+	req, _ := http.NewRequest("POST", "/pdal", reader)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	fmt.Println(w.Body)
+	if w.Code != http.StatusOK {
+		t.Errorf("StatusOK expected: %d", w.Code)
+	}
+}
+
 func TestNoFunctionField(t *testing.T) {
 	userJSON := `{
 		"source":

@@ -113,10 +113,71 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			return
 		}
 
-		exec.Command("pdal", "translate", file.Name(), fileOut.Name(),
+		out, err := exec.Command("pdal", "translate", file.Name(), fileOut.Name(),
 			"ground", "--filters.ground.extract=true", "--filters.ground.classify=false").CombinedOutput()
 
+		if err != nil {
+			fmt.Println(string(out))
+			fmt.Println(err.Error())
+		}
+
 		err = utils.S3Upload(fileOut, "venicegeo-sample-data", "temp/foo.laz")
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+
+	case "height":
+		file, err := os.Create("download_file.laz")
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+		defer file.Close()
+
+		fileOut, err := os.Create("output_file.laz")
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+		defer fileOut.Close()
+
+		err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+
+		out, err := exec.Command("pdal", "translate", file.Name(), fileOut.Name(),
+			"ground", "height", "ferry",
+			"--filters.ferry.dimensions=\"Height=Z\"", "-v10", "--debug").CombinedOutput()
+
+		if err != nil {
+			fmt.Println(string(out))
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+
+		err = utils.S3Upload(fileOut, "venicegeo-sample-data", "temp/foo.laz")
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+
+	case "groundopts":
+		out, err := exec.Command("pdal",
+			"--options=filters.ground").CombinedOutput()
+
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+
+	case "drivers":
+		out, err := exec.Command("pdal",
+			"--drivers").CombinedOutput()
+
+		fmt.Println(string(out))
 		if err != nil {
 			utils.InternalError(w, r, res, err.Error())
 			return
