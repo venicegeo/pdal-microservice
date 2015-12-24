@@ -165,7 +165,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 
 	case "groundopts":
-		out, err := exec.Command("pdal",
+		_, err := exec.Command("pdal",
 			"--options=filters.ground").CombinedOutput()
 
 		if err != nil {
