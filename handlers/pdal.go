@@ -150,7 +150,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 		out, err := exec.Command("pdal", "translate", file.Name(), fileOut.Name(),
 			"ground", "height", "ferry",
-			"--filters.ferry.dimensions=\"Height=Z\"", "-v10", "--debug").CombinedOutput()
+			"--filters.ferry.dimensions=Height=Z", "-v10", "--debug").CombinedOutput()
 
 		if err != nil {
 			fmt.Println(string(out))
@@ -173,15 +173,18 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			return
 		}
 
-	case "drivers":
-		out, err := exec.Command("pdal",
-			"--drivers").CombinedOutput()
+	/*
+		I get a bad_alloc here, but only via go test. The same command run natively works fine.
+		case "drivers":
+			out, err := exec.Command("pdal",
+				"--drivers").CombinedOutput()
 
-		fmt.Println(string(out))
-		if err != nil {
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
+			fmt.Println(string(out))
+			if err != nil {
+				utils.InternalError(w, r, res, err.Error())
+				return
+			}
+	*/
 
 	default:
 		utils.BadRequest(w, r, res,
