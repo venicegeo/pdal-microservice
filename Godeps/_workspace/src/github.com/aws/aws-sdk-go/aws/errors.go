@@ -1,6 +1,6 @@
 package aws
 
-import "github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
+import "github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
 
 var (
 	// ErrMissingRegion is an error that is returned if region configuration is

@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/client"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/client"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/credentials"
 )
 
 // AssumeRoler represents the minimal subset of the STS client API used by this provider.

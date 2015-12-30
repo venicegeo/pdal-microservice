@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/venicegeo/pdal-microservice",
+	"ImportPath": "github.com/venicegeo/pzsvc-pdal",
 	"GoVersion": "go1.5beta1",
 	"Packages": [
 		"./..."

@@ -4,8 +4,8 @@
 package s3iface
 
 import (
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/request"
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/request"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3"
 )
 
 // S3API is the interface type for s3.S3.

@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
 )
 
 func TestJobManager(t *testing.T) {

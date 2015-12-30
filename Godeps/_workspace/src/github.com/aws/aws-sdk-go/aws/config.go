@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/credentials"
 )
 
 // UseServiceDefaultRetries instructs the config to use the service's own default

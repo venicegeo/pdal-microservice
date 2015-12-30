@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/venicegeo/pdal-microservice/objects"
+	"github.com/venicegeo/pzsvc-pdal/objects"
 )
 
 func TestJobInput(t *testing.T) {

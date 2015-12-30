@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 /*
-pdal-microservice provides an endpoint for accepting PDAL requests.
+pzsvc-pdal provides an endpoint for accepting PDAL requests.
 
 Examples
 
@@ -28,8 +28,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
-	"github.com/venicegeo/pdal-microservice/handlers"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
+	"github.com/venicegeo/pzsvc-pdal/handlers"
 )
 
 func main() {

@@ -27,9 +27,9 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
-	"github.com/venicegeo/pdal-microservice/objects"
-	"github.com/venicegeo/pdal-microservice/utils"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
+	"github.com/venicegeo/pzsvc-pdal/objects"
+	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
 // PdalHandler handles PDAL jobs.

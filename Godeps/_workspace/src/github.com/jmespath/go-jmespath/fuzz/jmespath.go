@@ -1,6 +1,6 @@
 package jmespath
 
-import "github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/jmespath/go-jmespath"
+import "github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/jmespath/go-jmespath"
 
 // Fuzz will fuzz test the JMESPath parser.
 func Fuzz(data []byte) int {

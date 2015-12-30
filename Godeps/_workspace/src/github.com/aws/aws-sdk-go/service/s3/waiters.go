@@ -3,7 +3,7 @@
 package s3
 
 import (
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/private/waiter"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/private/waiter"
 )
 
 func (c *S3) WaitUntilBucketExists(input *HeadBucketInput) error {

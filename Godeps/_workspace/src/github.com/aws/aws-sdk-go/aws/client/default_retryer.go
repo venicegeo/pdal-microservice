@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/request"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/request"
 )
 
 // DefaultRetryer implements basic retry logic using exponential backoff for

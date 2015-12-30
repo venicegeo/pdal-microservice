@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/go-ini/ini"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/go-ini/ini"
 
-	"github.com/venicegeo/pdal-microservice/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
 )
 
 var (
