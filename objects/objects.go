@@ -40,15 +40,20 @@ func (status StatusType) String() string {
 	return statuses[status]
 }
 
-// JobInput defines the expected into JSON structure.
+// S3Bucket defines the expected JSON structure for S3 buckets.
+// An S3 bucket can be used for source (input) and destination (output) files.
+type S3Bucket struct {
+	Bucket string `json:"bucket"`
+	Key    string `json:"key"`
+}
+
+// JobInput defines the expected input JSON structure.
 // We currently support S3 input (bucket/key), though provider-specific (e.g.,
 // GRiD) may be legitimate.
 type JobInput struct {
-	Source struct {
-		Bucket string `json:"bucket"`
-		Key    string `json:"key"`
-	} `json:"source"`
-	Function *string `json:"function"`
+	Source      S3Bucket `json:"source"`
+	Function    *string  `json:"function"`
+	Destination S3Bucket `json:"destination"`
 }
 
 // JobOutput defines the expected output JSON structure.

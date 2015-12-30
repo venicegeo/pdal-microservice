@@ -75,7 +75,12 @@ func TestBasicGround(t *testing.T) {
 			"bucket": "venicegeo-sample-data",
 			"key": "pointcloud/samp71-utm.laz"
 		},
-		"function": "ground"
+		"function": "ground",
+		"destination":
+		{
+			"bucket": "venicegeo-sample-data",
+			"key": "temp/ground.laz"
+		}
 	}`
 	reader := strings.NewReader(userJSON)
 	router := httprouter.New()
@@ -96,7 +101,11 @@ func TestBasicHeight(t *testing.T) {
 			"bucket": "venicegeo-sample-data",
 			"key": "pointcloud/samp71-utm.laz"
 		},
-		"function": "height"
+		"function": "height",
+		"destination": {
+			"bucket": "venicegeo-sample-data",
+			"key": "temp/height.laz"
+		}
 	}`
 	reader := strings.NewReader(userJSON)
 	router := httprouter.New()

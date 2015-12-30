@@ -30,7 +30,11 @@ func TestJobInput(t *testing.T) {
         "bucket": "Foo",
         "key": "Bar"
       },
-      "function": "Baz"
+      "function": "Baz",
+			"destination": {
+				"bucket": "Out",
+				"key": "File"
+			}
     }`
 
 	b := []byte(in)
@@ -47,6 +51,12 @@ func TestJobInput(t *testing.T) {
 	}
 	if *msg.Function != "Baz" {
 		t.Error(msg.Function, "!= `Baz`")
+	}
+	if msg.Destination.Bucket != "Out" {
+		t.Error(msg.Destination.Bucket, "!= `Out`")
+	}
+	if msg.Destination.Key != "File" {
+		t.Error(msg.Destination.Key, "!= `File`")
 	}
 }
 

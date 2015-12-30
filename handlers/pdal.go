@@ -121,7 +121,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			fmt.Println(err.Error())
 		}
 
-		err = utils.S3Upload(fileOut, "venicegeo-sample-data", "temp/foo.laz")
+		err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
 		if err != nil {
 			utils.InternalError(w, r, res, err.Error())
 			return
@@ -158,7 +158,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			return
 		}
 
-		err = utils.S3Upload(fileOut, "venicegeo-sample-data", "temp/foo.laz")
+		err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
 		if err != nil {
 			utils.InternalError(w, r, res, err.Error())
 			return
