@@ -9,11 +9,11 @@ While not the only game in town, PDAL will provide the heavy lifting for most of
 # Install
 
 ```console
-$ git clone https://github.com/venicegeo/pdal-microservice
+$ git clone https://github.com/venicegeo/pzsvc-pdal
 $ scripts/build_and_run.sh
 ```
 
-The build script will first compile the Go code in a temporary container. The resulting static Go binary is then copied into our `venicegeo/pdal-microservice` image during the `docker build` step. Finally, the service is started on port 8080, mounting your `~/.aws/credentials` to the image.
+The build script will first compile the Go code in a temporary container. The resulting static Go binary is then copied into our `venicegeo/pzsvc-pdal` image during the `docker build` step. Finally, the service is started on port 8080, mounting your `~/.aws/credentials` to the image.
 
 # Example
 
