@@ -173,6 +173,41 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			return
 		}
 
+	case "dtm":
+		file, err := os.Create("download_file.laz")
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+		defer file.Close()
+
+		fileOut, err := os.Create("output.min.tif")
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+		defer fileOut.Close()
+
+		err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+
+		out, err := exec.Command("pdal", "translate", file.Name(), "output",
+			"ground", "--filters.ground.extract=true", "--filters.ground.classify=false", "-w", "writers.p2g", "--writers.p2g.output_type=min", "--writers.p2g.output_format=tif", "--writers.p2g.grid_dist_x=1.0", "--writers.p2g.grid_dist_y=1.0").CombinedOutput()
+
+		if err != nil {
+			fmt.Println(string(out))
+			fmt.Println(err.Error())
+		}
+
+		err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
+		if err != nil {
+			utils.InternalError(w, r, res, err.Error())
+			return
+		}
+
 	/*
 		I get a bad_alloc here, but only via go test. The same command run natively works fine.
 		case "drivers":
