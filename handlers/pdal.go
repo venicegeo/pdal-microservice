@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"time"
 
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
@@ -114,7 +115,8 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 
 		out, err := exec.Command("pdal", "translate", file.Name(), fileOut.Name(),
-			"ground", "--filters.ground.extract=true", "--filters.ground.classify=false").CombinedOutput()
+			"ground", "--filters.ground.extract=true",
+			"--filters.ground.classify=false").CombinedOutput()
 
 		if err != nil {
 			fmt.Println(string(out))
@@ -194,8 +196,28 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			return
 		}
 
+		gridSize := 1.0
+		if msg.Options != nil {
+			var opts objects.DtmOptions
+			if err := json.Unmarshal(*msg.Options, &opts); err != nil {
+				utils.BadRequest(w, r, res, err.Error())
+				return
+			}
+			if opts.GridSize != nil {
+				gridSize = *opts.GridSize
+			}
+		}
+		fmt.Println(gridSize)
+		gridDistX := "--writers.p2g.grid_dist_x=" +
+			strconv.FormatFloat(gridSize, 'f', -1, 64)
+		gridDistY := "--writers.p2g.grid_dist_y=" +
+			strconv.FormatFloat(gridSize, 'f', -1, 64)
+
 		out, err := exec.Command("pdal", "translate", file.Name(), "output",
-			"ground", "--filters.ground.extract=true", "--filters.ground.classify=false", "-w", "writers.p2g", "--writers.p2g.output_type=min", "--writers.p2g.output_format=tif", "--writers.p2g.grid_dist_x=1.0", "--writers.p2g.grid_dist_y=1.0").CombinedOutput()
+			"ground", "--filters.ground.extract=true",
+			"--filters.ground.classify=false", "-w", "writers.p2g",
+			"--writers.p2g.output_type=min", "--writers.p2g.output_format=tif",
+			gridDistX, gridDistY, "-v10", "--debug").CombinedOutput()
 
 		if err != nil {
 			fmt.Println(string(out))
@@ -209,7 +231,8 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 
 	/*
-		I get a bad_alloc here, but only via go test. The same command run natively works fine.
+		I get a bad_alloc here, but only via go test. The same command run natively
+		works fine.
 		case "drivers":
 			out, err := exec.Command("pdal",
 				"--drivers").CombinedOutput()

@@ -47,13 +47,19 @@ type S3Bucket struct {
 	Key    string `json:"key"`
 }
 
+// DtmOptions defines options for the DTM generation resource.
+type DtmOptions struct {
+	GridSize *float64 `json:"grid_size"`
+}
+
 // JobInput defines the expected input JSON structure.
 // We currently support S3 input (bucket/key), though provider-specific (e.g.,
 // GRiD) may be legitimate.
 type JobInput struct {
-	Source      S3Bucket `json:"source"`
-	Function    *string  `json:"function"`
-	Destination S3Bucket `json:"destination"`
+	Source      S3Bucket         `json:"source"`
+	Function    *string          `json:"function"`
+	Options     *json.RawMessage `json:"options"`
+	Destination S3Bucket         `json:"destination"`
 }
 
 // JobOutput defines the expected output JSON structure.
