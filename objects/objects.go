@@ -61,6 +61,13 @@ type GroundOptions struct {
 	Slope           *float64 `json:"slope"`
 }
 
+// InfoOptions defines options for Info.
+type InfoOptions struct {
+	Boundary *bool `json:"boundary"`
+	Metadata *bool `json:"metadata"`
+	Schema   *bool `json:"schema"`
+}
+
 // JobInput defines the expected input JSON structure.
 // We currently support S3 input (bucket/key), though provider-specific (e.g.,
 // GRiD) may be legitimate.

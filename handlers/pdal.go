@@ -78,7 +78,37 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			return
 		}
 
-		out, _ := exec.Command("pdal", *msg.Function, file.Name()).CombinedOutput()
+		boundary := false
+		metadata := false
+		schema := false
+		if msg.Options != nil {
+			var opts objects.InfoOptions
+			if err := json.Unmarshal(*msg.Options, &opts); err != nil {
+				utils.BadRequest(w, r, res, err.Error())
+				return
+			}
+			if opts.Boundary != nil {
+				boundary = *opts.Boundary
+			}
+			if opts.Metadata != nil {
+				metadata = *opts.Metadata
+			}
+			if opts.Schema != nil {
+				schema = *opts.Schema
+			}
+		}
+		var params string
+		if boundary {
+			params = params + "--boundary"
+		}
+		if metadata {
+			params = params + "--metadata"
+		}
+		if schema {
+			params = params + "--schema"
+		}
+
+		out, _ := exec.Command("pdal", *msg.Function, file.Name(), params).CombinedOutput()
 
 		// Trim whitespace
 		buffer := new(bytes.Buffer)
