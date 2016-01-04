@@ -1,3 +1,5 @@
+[![GoDoc](https://godoc.org/github.com/venicegeo/pzsvc-pdal?status.svg)](https://godoc.org/github.com/venicegeo/pzsvc-pdal)
+
 # PDAL Microservice
 
 At this point, this repository serves as a sandbox for developing PDAL-based microservices for Piazza.
