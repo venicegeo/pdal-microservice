@@ -37,20 +37,7 @@ type functionFunc func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput)
 
 func infoFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput) {
-	file, err := os.Create("download_file.laz")
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-	defer file.Close()
-
-	err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-
+	res *objects.JobOutput, msg objects.JobInput, f string) {
 	boundary := false
 	metadata := false
 	schema := false
@@ -81,7 +68,7 @@ func infoFunction(w http.ResponseWriter, r *http.Request,
 		params = params + "--schema"
 	}
 
-	out, _ := exec.Command("pdal", *msg.Function, file.Name(), params).CombinedOutput()
+	out, _ := exec.Command("pdal", *msg.Function, f, params).CombinedOutput()
 
 	// Trim whitespace
 	buffer := new(bytes.Buffer)
@@ -89,16 +76,28 @@ func infoFunction(w http.ResponseWriter, r *http.Request,
 		fmt.Println(err)
 	}
 
-	if err = json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
+	if err := json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func makeFunction(fn func(http.ResponseWriter, *http.Request,
-	*objects.JobOutput, objects.JobInput)) functionFunc {
+	*objects.JobOutput, objects.JobInput, string)) functionFunc {
 	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
 		msg objects.JobInput) {
-		fn(w, r, res, msg)
+		file, err := os.Create("download_file.laz")
+		if err != nil {
+			utils.InternalError(w, r, *res, err.Error())
+			return
+		}
+		defer file.Close()
+
+		err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
+		if err != nil {
+			utils.InternalError(w, r, *res, err.Error())
+			return
+		}
+		fn(w, r, res, msg, file.Name())
 	}
 }
 
