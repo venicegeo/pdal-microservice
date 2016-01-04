@@ -58,8 +58,10 @@ func DtmFunction(w http.ResponseWriter, r *http.Request,
 	args = append(args, "-w", "writers.p2g")
 	args = append(args, "--writers.p2g.output_type=min")
 	args = append(args, "--writers.p2g.output_format=tif")
-	args = append(args, "--writers.p2g.grid_dist_x="+strconv.FormatFloat(opts.GridSize, 'f', -1, 64))
-	args = append(args, "--writers.p2g.grid_dist_y="+strconv.FormatFloat(opts.GridSize, 'f', -1, 64))
+	args = append(args,
+		"--writers.p2g.grid_dist_x="+strconv.FormatFloat(opts.GridSize, 'f', -1, 64))
+	args = append(args,
+		"--writers.p2g.grid_dist_y="+strconv.FormatFloat(opts.GridSize, 'f', -1, 64))
 	args = append(args, "-v10", "--debug")
 
 	out, err := exec.Command("pdal", args...).CombinedOutput()

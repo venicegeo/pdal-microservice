@@ -37,7 +37,11 @@ type InfoOptions struct {
 
 // NewInfoOptions constructs InfoOptions with default values.
 func NewInfoOptions() *InfoOptions {
-	return &InfoOptions{Boundary: false, Metadata: false, Schema: false}
+	return &InfoOptions{
+		Boundary: false,
+		Metadata: false,
+		Schema:   false,
+	}
 }
 
 // InfoFunction implements pdal info.

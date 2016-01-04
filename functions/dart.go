@@ -50,7 +50,8 @@ func DartFunction(w http.ResponseWriter, r *http.Request,
 
 	var args []string
 	args = append(args, "translate", i, o, "dartsample")
-	args = append(args, "--filters.dartsample.radius="+strconv.FormatFloat(opts.Radius, 'f', -1, 64))
+	args = append(args,
+		"--filters.dartsample.radius="+strconv.FormatFloat(opts.Radius, 'f', -1, 64))
 	args = append(args, "-v10", "--debug")
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 

@@ -38,7 +38,13 @@ type GroundOptions struct {
 
 // NewGroundOptions constructs GroundOptions with default values.
 func NewGroundOptions() *GroundOptions {
-	return &GroundOptions{CellSize: 1.0, InitialDistance: 0.15, MaxDistance: 2.5, MaxWindowSize: 33.0, Slope: 1.0}
+	return &GroundOptions{
+		CellSize:        1.0,
+		InitialDistance: 0.15,
+		MaxDistance:     2.5,
+		MaxWindowSize:   33.0,
+		Slope:           1.0,
+	}
 }
 
 // GroundFunction implements pdal ground.
@@ -59,11 +65,16 @@ func GroundFunction(w http.ResponseWriter, r *http.Request,
 	args = append(args, "ground")
 	args = append(args, "--filters.ground.extract=true")
 	args = append(args, "--filters.ground.classify=false")
-	args = append(args, "--filters.ground.cell_size="+strconv.FormatFloat(opts.CellSize, 'f', -1, 64))
-	args = append(args, "--filters.ground.initial_distance="+strconv.FormatFloat(opts.InitialDistance, 'f', -1, 64))
-	args = append(args, "--filters.ground.max_distance="+strconv.FormatFloat(opts.MaxDistance, 'f', -1, 64))
-	args = append(args, "--filters.ground.max_window_size="+strconv.FormatFloat(opts.MaxWindowSize, 'f', -1, 64))
-	args = append(args, "--filters.ground.slope="+strconv.FormatFloat(opts.Slope, 'f', -1, 64))
+	args = append(args,
+		"--filters.ground.cell_size="+strconv.FormatFloat(opts.CellSize, 'f', -1, 64))
+	args = append(args,
+		"--filters.ground.initial_distance="+strconv.FormatFloat(opts.InitialDistance, 'f', -1, 64))
+	args = append(args,
+		"--filters.ground.max_distance="+strconv.FormatFloat(opts.MaxDistance, 'f', -1, 64))
+	args = append(args,
+		"--filters.ground.max_window_size="+strconv.FormatFloat(opts.MaxWindowSize, 'f', -1, 64))
+	args = append(args,
+		"--filters.ground.slope="+strconv.FormatFloat(opts.Slope, 'f', -1, 64))
 	args = append(args, "-v10", "--debug")
 
 	out, err := exec.Command("pdal", args...).CombinedOutput()
