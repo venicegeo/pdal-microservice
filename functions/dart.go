@@ -17,18 +17,42 @@ limitations under the License.
 package functions
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os/exec"
+	"strconv"
 
 	"github.com/venicegeo/pzsvc-pdal/objects"
+	"github.com/venicegeo/pzsvc-pdal/utils"
 )
+
+// DartOptions defines options for dart sampling.
+type DartOptions struct {
+	Radius float64 `json:"radius"`
+}
+
+// NewDartOptions constructs DartOptions with default values.
+func NewDartOptions() *DartOptions {
+	return &DartOptions{Radius: 1.0}
+}
 
 // DartFunction implements pdal height.
 func DartFunction(w http.ResponseWriter, r *http.Request,
 	res *objects.JobOutput, msg objects.JobInput, i, o string) {
-	out, err := exec.Command("pdal", "translate", i, o,
-		"dartsample", "-v10", "--debug").CombinedOutput()
+	opts := NewDartOptions()
+	if msg.Options != nil {
+		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
+			utils.BadRequest(w, r, *res, err.Error())
+			return
+		}
+	}
+
+	var args []string
+	args = append(args, "translate", i, o, "dartsample")
+	args = append(args, "--filters.dartsample.radius="+strconv.FormatFloat(opts.Radius, 'f', -1, 64))
+	args = append(args, "-v10", "--debug")
+	out, err := exec.Command("pdal", args...).CombinedOutput()
 
 	if err != nil {
 		fmt.Println(string(out))
