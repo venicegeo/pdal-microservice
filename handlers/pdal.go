@@ -35,72 +35,6 @@ import (
 type functionFunc func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput)
 
-func groundFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput, f string) {
-	fileOut, err := os.Create("output_file.laz")
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-	defer fileOut.Close()
-
-	cellSize := 1.0
-	initialDistance := 0.15
-	maxDistance := 2.5
-	maxWindowSize := 33.0
-	slope := 1.0
-	if msg.Options != nil {
-		var opts objects.GroundOptions
-		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			utils.BadRequest(w, r, *res, err.Error())
-			return
-		}
-		if opts.CellSize != nil {
-			cellSize = *opts.CellSize
-		}
-		if opts.InitialDistance != nil {
-			initialDistance = *opts.InitialDistance
-		}
-		if opts.MaxDistance != nil {
-			maxDistance = *opts.MaxDistance
-		}
-		if opts.MaxWindowSize != nil {
-			maxWindowSize = *opts.MaxWindowSize
-		}
-		if opts.Slope != nil {
-			slope = *opts.Slope
-		}
-	}
-	cellSizeStr := "--filters.ground.cell_size=" +
-		strconv.FormatFloat(cellSize, 'f', -1, 64)
-	initialDistanceStr := "--filters.ground.initial_distance=" +
-		strconv.FormatFloat(initialDistance, 'f', -1, 64)
-	maxDistanceStr := "--filters.ground.max_distance=" +
-		strconv.FormatFloat(maxDistance, 'f', -1, 64)
-	maxWindowSizeStr := "--filters.ground.max_window_size=" +
-		strconv.FormatFloat(maxWindowSize, 'f', -1, 64)
-	slopeStr := "--filters.ground.slope=" +
-		strconv.FormatFloat(slope, 'f', -1, 64)
-	fmt.Println(maxWindowSizeStr)
-
-	out, err := exec.Command("pdal", "translate", f, fileOut.Name(),
-		"ground", "--filters.ground.extract=true",
-		"--filters.ground.classify=false", cellSizeStr, initialDistanceStr,
-		maxDistanceStr, maxWindowSizeStr, slopeStr, "-v10",
-		"--debug").CombinedOutput()
-
-	if err != nil {
-		fmt.Println(string(out))
-		fmt.Println(err.Error())
-	}
-
-	err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-}
-
 func heightFunction(w http.ResponseWriter, r *http.Request,
 	res *objects.JobOutput, msg objects.JobInput, f string) {
 	fileOut, err := os.Create("output_file.laz")
@@ -229,7 +163,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		fmt.Println("pipeline not implemented yet")
 
 	case "ground":
-		makeFunction(groundFunction)(w, r, &res, msg)
+		makeFunction(functions.GroundFunction)(w, r, &res, msg)
 
 	case "height":
 		makeFunction(heightFunction)(w, r, &res, msg)
