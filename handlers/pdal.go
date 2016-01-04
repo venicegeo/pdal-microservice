@@ -143,6 +143,9 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	case "dtm":
 		makeFunction(functions.DtmFunction)(w, r, &res, msg)
 
+	case "dart":
+		makeFunction(functions.DartFunction)(w, r, &res, msg)
+
 	// list available functions
 
 	// list options for named function
