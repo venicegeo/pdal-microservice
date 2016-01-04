@@ -33,6 +33,75 @@ import (
 	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
+type functionFunc func(http.ResponseWriter, *http.Request,
+	*objects.JobOutput, objects.JobInput)
+
+func infoFunction(w http.ResponseWriter, r *http.Request,
+	res *objects.JobOutput, msg objects.JobInput) {
+	file, err := os.Create("download_file.laz")
+	if err != nil {
+		utils.InternalError(w, r, *res, err.Error())
+		return
+	}
+	defer file.Close()
+
+	err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
+	if err != nil {
+		utils.InternalError(w, r, *res, err.Error())
+		return
+	}
+
+	boundary := false
+	metadata := false
+	schema := false
+	if msg.Options != nil {
+		var opts objects.InfoOptions
+		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
+			utils.BadRequest(w, r, *res, err.Error())
+			return
+		}
+		if opts.Boundary != nil {
+			boundary = *opts.Boundary
+		}
+		if opts.Metadata != nil {
+			metadata = *opts.Metadata
+		}
+		if opts.Schema != nil {
+			schema = *opts.Schema
+		}
+	}
+	var params string
+	if boundary {
+		params = params + "--boundary"
+	}
+	if metadata {
+		params = params + "--metadata"
+	}
+	if schema {
+		params = params + "--schema"
+	}
+
+	out, _ := exec.Command("pdal", *msg.Function, file.Name(), params).CombinedOutput()
+
+	// Trim whitespace
+	buffer := new(bytes.Buffer)
+	if err := json.Compact(buffer, out); err != nil {
+		fmt.Println(err)
+	}
+
+	if err = json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func makeFunction(fn func(http.ResponseWriter, *http.Request,
+	*objects.JobOutput, objects.JobInput)) functionFunc {
+	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
+		msg objects.JobInput) {
+		fn(w, r, res, msg)
+	}
+}
+
 // PdalHandler handles PDAL jobs.
 func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var res objects.JobOutput
@@ -65,60 +134,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	switch *msg.Function {
 	case "info":
-		file, err := os.Create("download_file.laz")
-		if err != nil {
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
-		defer file.Close()
-
-		err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
-		if err != nil {
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
-
-		boundary := false
-		metadata := false
-		schema := false
-		if msg.Options != nil {
-			var opts objects.InfoOptions
-			if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-				utils.BadRequest(w, r, res, err.Error())
-				return
-			}
-			if opts.Boundary != nil {
-				boundary = *opts.Boundary
-			}
-			if opts.Metadata != nil {
-				metadata = *opts.Metadata
-			}
-			if opts.Schema != nil {
-				schema = *opts.Schema
-			}
-		}
-		var params string
-		if boundary {
-			params = params + "--boundary"
-		}
-		if metadata {
-			params = params + "--metadata"
-		}
-		if schema {
-			params = params + "--schema"
-		}
-
-		out, _ := exec.Command("pdal", *msg.Function, file.Name(), params).CombinedOutput()
-
-		// Trim whitespace
-		buffer := new(bytes.Buffer)
-		if err := json.Compact(buffer, out); err != nil {
-			fmt.Println(err)
-		}
-
-		if err = json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
-			log.Fatal(err)
-		}
+		makeFunction(infoFunction)(w, r, &res, msg)
 
 	case "pipeline":
 		fmt.Println("pipeline not implemented yet")
