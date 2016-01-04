@@ -27,36 +27,42 @@ import (
 	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
-// dtmOptions defines options for the DTM generation resource.
-type dtmOptions struct {
-	GridSize *float64 `json:"grid_size"`
+// DtmOptions defines options for the DTM generation resource.
+type DtmOptions struct {
+	GridSize float64 `json:"grid_size"`
+}
+
+// NewDtmOptions constructs DtmOptions with default values.
+func NewDtmOptions() *DtmOptions {
+	return &DtmOptions{GridSize: 1.0}
 }
 
 // DtmFunction implements pdal dtm.
 func DtmFunction(w http.ResponseWriter, r *http.Request,
 	res *objects.JobOutput, msg objects.JobInput, i, o string) {
-	gridSize := 1.0
+	opts := NewDtmOptions()
 	if msg.Options != nil {
-		var opts dtmOptions
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
 			utils.BadRequest(w, r, *res, err.Error())
 			return
 		}
-		if opts.GridSize != nil {
-			gridSize = *opts.GridSize
-		}
 	}
-	fmt.Println(gridSize)
-	gridDistX := "--writers.p2g.grid_dist_x=" +
-		strconv.FormatFloat(gridSize, 'f', -1, 64)
-	gridDistY := "--writers.p2g.grid_dist_y=" +
-		strconv.FormatFloat(gridSize, 'f', -1, 64)
 
-	out, err := exec.Command("pdal", "translate", i, "output",
-		"ground", "--filters.ground.extract=true",
-		"--filters.ground.classify=false", "-w", "writers.p2g",
-		"--writers.p2g.output_type=min", "--writers.p2g.output_format=tif",
-		gridDistX, gridDistY, "-v10", "--debug").CombinedOutput()
+	var args []string
+	args = append(args, "translate")
+	args = append(args, i)
+	args = append(args, "output")
+	args = append(args, "ground")
+	args = append(args, "--filters.ground.extract=true")
+	args = append(args, "--filters.ground.classify=false")
+	args = append(args, "-w", "writers.p2g")
+	args = append(args, "--writers.p2g.output_type=min")
+	args = append(args, "--writers.p2g.output_format=tif")
+	args = append(args, "--writers.p2g.grid_dist_x="+strconv.FormatFloat(opts.GridSize, 'f', -1, 64))
+	args = append(args, "--writers.p2g.grid_dist_y="+strconv.FormatFloat(opts.GridSize, 'f', -1, 64))
+	args = append(args, "-v10", "--debug")
+
+	out, err := exec.Command("pdal", args...).CombinedOutput()
 
 	if err != nil {
 		fmt.Println(string(out))

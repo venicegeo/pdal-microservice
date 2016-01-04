@@ -35,7 +35,7 @@ type InfoOptions struct {
 	Schema   bool `json:"schema"`
 }
 
-// NewInfoOptions constructs infoOptions with default values.
+// NewInfoOptions constructs InfoOptions with default values.
 func NewInfoOptions() *InfoOptions {
 	return &InfoOptions{Boundary: false, Metadata: false, Schema: false}
 }
@@ -43,25 +43,25 @@ func NewInfoOptions() *InfoOptions {
 // InfoFunction implements pdal info.
 func InfoFunction(w http.ResponseWriter, r *http.Request,
 	res *objects.JobOutput, msg objects.JobInput, i, o string) {
-	var args []string
-	args = append(args, *msg.Function)
-	args = append(args, i)
-
+	opts := NewInfoOptions()
 	if msg.Options != nil {
-		opts := NewInfoOptions()
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
 			utils.BadRequest(w, r, *res, err.Error())
 			return
 		}
-		if opts.Boundary {
-			args = append(args, "--boundary")
-		}
-		if opts.Metadata {
-			args = append(args, "--metadata")
-		}
-		if opts.Schema {
-			args = append(args, "--schema")
-		}
+	}
+
+	var args []string
+	args = append(args, *msg.Function)
+	args = append(args, i)
+	if opts.Boundary {
+		args = append(args, "--boundary")
+	}
+	if opts.Metadata {
+		args = append(args, "--metadata")
+	}
+	if opts.Schema {
+		args = append(args, "--schema")
 	}
 
 	out, _ := exec.Command("pdal", args...).CombinedOutput()
