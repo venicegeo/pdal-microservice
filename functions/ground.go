@@ -27,62 +27,46 @@ import (
 	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
-// groundOptions defines options for Ground segmentation.
-type groundOptions struct {
-	CellSize        *float64 `json:"cell_size"`
-	InitialDistance *float64 `json:"initial_distance"`
-	MaxDistance     *float64 `json:"max_distance"`
-	MaxWindowSize   *float64 `json:"max_window_size"`
-	Slope           *float64 `json:"slope"`
+// GroundOptions defines options for Ground segmentation.
+type GroundOptions struct {
+	CellSize        float64 `json:"cell_size"`
+	InitialDistance float64 `json:"initial_distance"`
+	MaxDistance     float64 `json:"max_distance"`
+	MaxWindowSize   float64 `json:"max_window_size"`
+	Slope           float64 `json:"slope"`
+}
+
+// NewGroundOptions constructs GroundOptions with default values.
+func NewGroundOptions() *GroundOptions {
+	return &GroundOptions{CellSize: 1.0, InitialDistance: 0.15, MaxDistance: 2.5, MaxWindowSize: 33.0, Slope: 1.0}
 }
 
 // GroundFunction implements pdal ground.
 func GroundFunction(w http.ResponseWriter, r *http.Request,
 	res *objects.JobOutput, msg objects.JobInput, i, o string) {
-	cellSize := 1.0
-	initialDistance := 0.15
-	maxDistance := 2.5
-	maxWindowSize := 33.0
-	slope := 1.0
+	opts := NewGroundOptions()
 	if msg.Options != nil {
-		var opts groundOptions
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
 			utils.BadRequest(w, r, *res, err.Error())
 			return
 		}
-		if opts.CellSize != nil {
-			cellSize = *opts.CellSize
-		}
-		if opts.InitialDistance != nil {
-			initialDistance = *opts.InitialDistance
-		}
-		if opts.MaxDistance != nil {
-			maxDistance = *opts.MaxDistance
-		}
-		if opts.MaxWindowSize != nil {
-			maxWindowSize = *opts.MaxWindowSize
-		}
-		if opts.Slope != nil {
-			slope = *opts.Slope
-		}
 	}
-	cellSizeStr := "--filters.ground.cell_size=" +
-		strconv.FormatFloat(cellSize, 'f', -1, 64)
-	initialDistanceStr := "--filters.ground.initial_distance=" +
-		strconv.FormatFloat(initialDistance, 'f', -1, 64)
-	maxDistanceStr := "--filters.ground.max_distance=" +
-		strconv.FormatFloat(maxDistance, 'f', -1, 64)
-	maxWindowSizeStr := "--filters.ground.max_window_size=" +
-		strconv.FormatFloat(maxWindowSize, 'f', -1, 64)
-	slopeStr := "--filters.ground.slope=" +
-		strconv.FormatFloat(slope, 'f', -1, 64)
-	fmt.Println(maxWindowSizeStr)
 
-	out, err := exec.Command("pdal", "translate", i, o,
-		"ground", "--filters.ground.extract=true",
-		"--filters.ground.classify=false", cellSizeStr, initialDistanceStr,
-		maxDistanceStr, maxWindowSizeStr, slopeStr, "-v10",
-		"--debug").CombinedOutput()
+	var args []string
+	args = append(args, "translate")
+	args = append(args, i)
+	args = append(args, o)
+	args = append(args, "ground")
+	args = append(args, "--filters.ground.extract=true")
+	args = append(args, "--filters.ground.classify=false")
+	args = append(args, "--filters.ground.cell_size="+strconv.FormatFloat(opts.CellSize, 'f', -1, 64))
+	args = append(args, "--filters.ground.initial_distance="+strconv.FormatFloat(opts.InitialDistance, 'f', -1, 64))
+	args = append(args, "--filters.ground.max_distance="+strconv.FormatFloat(opts.MaxDistance, 'f', -1, 64))
+	args = append(args, "--filters.ground.max_window_size="+strconv.FormatFloat(opts.MaxWindowSize, 'f', -1, 64))
+	args = append(args, "--filters.ground.slope="+strconv.FormatFloat(opts.Slope, 'f', -1, 64))
+	args = append(args, "-v10", "--debug")
+
+	out, err := exec.Command("pdal", args...).CombinedOutput()
 
 	if err != nil {
 		fmt.Println(string(out))
