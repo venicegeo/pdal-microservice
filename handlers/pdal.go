@@ -17,11 +17,9 @@ limitations under the License.
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -29,57 +27,13 @@ import (
 	"time"
 
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
+	"github.com/venicegeo/pzsvc-pdal/functions"
 	"github.com/venicegeo/pzsvc-pdal/objects"
 	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
 type functionFunc func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput)
-
-func infoFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput, f string) {
-	boundary := false
-	metadata := false
-	schema := false
-	if msg.Options != nil {
-		var opts objects.InfoOptions
-		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			utils.BadRequest(w, r, *res, err.Error())
-			return
-		}
-		if opts.Boundary != nil {
-			boundary = *opts.Boundary
-		}
-		if opts.Metadata != nil {
-			metadata = *opts.Metadata
-		}
-		if opts.Schema != nil {
-			schema = *opts.Schema
-		}
-	}
-	var params string
-	if boundary {
-		params = params + "--boundary"
-	}
-	if metadata {
-		params = params + "--metadata"
-	}
-	if schema {
-		params = params + "--schema"
-	}
-
-	out, _ := exec.Command("pdal", *msg.Function, f, params).CombinedOutput()
-
-	// Trim whitespace
-	buffer := new(bytes.Buffer)
-	if err := json.Compact(buffer, out); err != nil {
-		fmt.Println(err)
-	}
-
-	if err := json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
-		log.Fatal(err)
-	}
-}
 
 func groundFunction(w http.ResponseWriter, r *http.Request,
 	res *objects.JobOutput, msg objects.JobInput, f string) {
@@ -269,7 +223,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	switch *msg.Function {
 	case "info":
-		makeFunction(infoFunction)(w, r, &res, msg)
+		makeFunction(functions.InfoFunction)(w, r, &res, msg)
 
 	case "pipeline":
 		fmt.Println("pipeline not implemented yet")
