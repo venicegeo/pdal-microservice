@@ -155,6 +155,13 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 
 	// list options for named function
+	case "options":
+		// start with only info options as a test
+		foo := functions.NewInfoOptions()
+		bar, _ := json.Marshal(foo)
+		if err := json.Unmarshal(bar, &res.Response); err != nil {
+			log.Fatal(err)
+		}
 
 	// An unrecognized function will result in 400 error, with message explaining
 	// how to list available functions.

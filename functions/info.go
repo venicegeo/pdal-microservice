@@ -28,47 +28,43 @@ import (
 	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
-// infoOptions defines options for Info.
-type infoOptions struct {
-	Boundary *bool `json:"boundary"`
-	Metadata *bool `json:"metadata"`
-	Schema   *bool `json:"schema"`
+// InfoOptions defines options for Info.
+type InfoOptions struct {
+	Boundary bool `json:"boundary"`
+	Metadata bool `json:"metadata"`
+	Schema   bool `json:"schema"`
+}
+
+// NewInfoOptions constructs infoOptions with default values.
+func NewInfoOptions() *InfoOptions {
+	return &InfoOptions{Boundary: false, Metadata: false, Schema: false}
 }
 
 // InfoFunction implements pdal info.
 func InfoFunction(w http.ResponseWriter, r *http.Request,
 	res *objects.JobOutput, msg objects.JobInput, i, o string) {
-	boundary := false
-	metadata := false
-	schema := false
+	var args []string
+	args = append(args, *msg.Function)
+	args = append(args, i)
+
 	if msg.Options != nil {
-		var opts infoOptions
+		opts := NewInfoOptions()
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
 			utils.BadRequest(w, r, *res, err.Error())
 			return
 		}
-		if opts.Boundary != nil {
-			boundary = *opts.Boundary
+		if opts.Boundary {
+			args = append(args, "--boundary")
 		}
-		if opts.Metadata != nil {
-			metadata = *opts.Metadata
+		if opts.Metadata {
+			args = append(args, "--metadata")
 		}
-		if opts.Schema != nil {
-			schema = *opts.Schema
+		if opts.Schema {
+			args = append(args, "--schema")
 		}
-	}
-	var params string
-	if boundary {
-		params = params + "--boundary"
-	}
-	if metadata {
-		params = params + "--metadata"
-	}
-	if schema {
-		params = params + "--schema"
 	}
 
-	out, _ := exec.Command("pdal", *msg.Function, i, params).CombinedOutput()
+	out, _ := exec.Command("pdal", args...).CombinedOutput()
 
 	// Trim whitespace
 	buffer := new(bytes.Buffer)
