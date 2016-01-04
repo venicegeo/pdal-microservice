@@ -36,7 +36,10 @@ type DartOptions struct {
 
 // NewDartOptions constructs DartOptions with default values.
 func NewDartOptions() *DartOptions {
-	return &DartOptions{Radius: 1.0}
+	return &DartOptions{
+		// Radius default.
+		Radius: 1.0,
+	}
 }
 
 // DartFunction implements pdal height.
