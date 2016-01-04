@@ -30,7 +30,7 @@ import (
 
 // InfoFunction implements pdal info.
 func InfoFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput, f string) {
+	res *objects.JobOutput, msg objects.JobInput, i, o string) {
 	boundary := false
 	metadata := false
 	schema := false
@@ -61,7 +61,7 @@ func InfoFunction(w http.ResponseWriter, r *http.Request,
 		params = params + "--schema"
 	}
 
-	out, _ := exec.Command("pdal", *msg.Function, f, params).CombinedOutput()
+	out, _ := exec.Command("pdal", *msg.Function, i, params).CombinedOutput()
 
 	// Trim whitespace
 	buffer := new(bytes.Buffer)

@@ -33,62 +33,48 @@ import (
 type functionFunc func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput)
 
-func makeIFunction(fn func(http.ResponseWriter, *http.Request,
-	*objects.JobOutput, objects.JobInput, string)) functionFunc {
-	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
-		msg objects.JobInput) {
-		keySlice := strings.Split(msg.Source.Key, "/")
-		inputName := keySlice[len(keySlice)-1]
-		file, err := os.Create(inputName)
-		if err != nil {
-			utils.InternalError(w, r, *res, err.Error())
-			return
-		}
-		defer file.Close()
-
-		err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
-		if err != nil {
-			utils.InternalError(w, r, *res, err.Error())
-			return
-		}
-		fn(w, r, res, msg, file.Name())
-	}
-}
-
-func makeIOFunction(fn func(http.ResponseWriter, *http.Request,
+func makeFunction(fn func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput, string, string)) functionFunc {
 	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
 		msg objects.JobInput) {
+		var inputName, outputName string
+		var fileIn, fileOut *os.File
+
 		keySlice := strings.Split(msg.Source.Key, "/")
-		inputName := keySlice[len(keySlice)-1]
-		file, err := os.Create(inputName)
+		inputName = keySlice[len(keySlice)-1]
+		fileIn, err := os.Create(inputName)
 		if err != nil {
 			utils.InternalError(w, r, *res, err.Error())
 			return
 		}
-		defer file.Close()
+		defer fileIn.Close()
 
-		keySlice = strings.Split(msg.Destination.Key, "/")
-		outputName := keySlice[len(keySlice)-1]
-		fileOut, err := os.Create(outputName)
+		if len(msg.Destination.Key) > 0 {
+			keySlice = strings.Split(msg.Destination.Key, "/")
+			outputName = keySlice[len(keySlice)-1]
+			fileOut, err = os.Create(outputName)
+			if err != nil {
+				utils.InternalError(w, r, *res, err.Error())
+				return
+			}
+			defer fileOut.Close()
+		}
+
+		err = utils.S3Download(fileIn, msg.Source.Bucket, msg.Source.Key)
 		if err != nil {
 			utils.InternalError(w, r, *res, err.Error())
 			return
 		}
-		defer fileOut.Close()
 
-		err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
-		if err != nil {
-			utils.InternalError(w, r, *res, err.Error())
-			return
-		}
+		fn(w, r, res, msg, inputName, outputName)
 
-		fn(w, r, res, msg, file.Name(), fileOut.Name())
-
-		err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
-		if err != nil {
-			utils.InternalError(w, r, *res, err.Error())
-			return
+		// should probably check fileOut instead
+		if len(msg.Destination.Key) > 0 {
+			err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
+			if err != nil {
+				utils.InternalError(w, r, *res, err.Error())
+				return
+			}
 		}
 	}
 }
@@ -125,16 +111,16 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	switch *msg.Function {
 	case "info":
-		makeIFunction(functions.InfoFunction)(w, r, &res, msg)
+		makeFunction(functions.InfoFunction)(w, r, &res, msg)
 
 	case "ground":
-		makeIOFunction(functions.GroundFunction)(w, r, &res, msg)
+		makeFunction(functions.GroundFunction)(w, r, &res, msg)
 
 	case "height":
-		makeIOFunction(functions.HeightFunction)(w, r, &res, msg)
+		makeFunction(functions.HeightFunction)(w, r, &res, msg)
 
 	case "dtm":
-		makeIOFunction(functions.DtmFunction)(w, r, &res, msg)
+		makeFunction(functions.DtmFunction)(w, r, &res, msg)
 
 	// list available functions
 
