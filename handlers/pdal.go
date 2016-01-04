@@ -19,6 +19,7 @@ package handlers
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -146,7 +147,12 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	case "dart":
 		makeFunction(functions.DartFunction)(w, r, &res, msg)
 
-	// list available functions
+	case "list":
+		out := []byte(`{"functions":["info","ground","height","dtm","dart","list"]}`)
+
+		if err := json.Unmarshal(out, &res.Response); err != nil {
+			log.Fatal(err)
+		}
 
 	// list options for named function
 
