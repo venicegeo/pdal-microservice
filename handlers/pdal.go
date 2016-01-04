@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
 	"time"
 
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
@@ -97,31 +96,8 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	case "height":
 		makeFunction(functions.HeightFunction)(w, r, &res, msg)
 
-	case "groundopts":
-		_, err := exec.Command("pdal",
-			"--options=filters.ground").CombinedOutput()
-
-		if err != nil {
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
-
 	case "dtm":
 		makeFunction(functions.DtmFunction)(w, r, &res, msg)
-
-	/*
-		I get a bad_alloc here, but only via go test. The same command run natively
-		works fine.
-		case "drivers":
-			out, err := exec.Command("pdal",
-				"--drivers").CombinedOutput()
-
-			fmt.Println(string(out))
-			if err != nil {
-				utils.InternalError(w, r, res, err.Error())
-				return
-			}
-	*/
 
 	default:
 		utils.BadRequest(w, r, res,
