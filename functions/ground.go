@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"os/exec"
 	"strconv"
 
@@ -30,14 +29,7 @@ import (
 
 // GroundFunction implements pdal ground.
 func GroundFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput, f string) {
-	fileOut, err := os.Create("output_file.laz")
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-	defer fileOut.Close()
-
+	res *objects.JobOutput, msg objects.JobInput, i, o string) {
 	cellSize := 1.0
 	initialDistance := 0.15
 	maxDistance := 2.5
@@ -77,7 +69,7 @@ func GroundFunction(w http.ResponseWriter, r *http.Request,
 		strconv.FormatFloat(slope, 'f', -1, 64)
 	fmt.Println(maxWindowSizeStr)
 
-	out, err := exec.Command("pdal", "translate", f, fileOut.Name(),
+	out, err := exec.Command("pdal", "translate", i, o,
 		"ground", "--filters.ground.extract=true",
 		"--filters.ground.classify=false", cellSizeStr, initialDistanceStr,
 		maxDistanceStr, maxWindowSizeStr, slopeStr, "-v10",
@@ -86,11 +78,5 @@ func GroundFunction(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		fmt.Println(string(out))
 		fmt.Println(err.Error())
-	}
-
-	err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
 	}
 }

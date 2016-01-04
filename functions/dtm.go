@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"os/exec"
 	"strconv"
 
@@ -30,14 +29,7 @@ import (
 
 // DtmFunction implements pdal dtm.
 func DtmFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput, f string) {
-	fileOut, err := os.Create("output.min.tif")
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-	defer fileOut.Close()
-
+	res *objects.JobOutput, msg objects.JobInput, i, o string) {
 	gridSize := 1.0
 	if msg.Options != nil {
 		var opts objects.DtmOptions
@@ -55,7 +47,7 @@ func DtmFunction(w http.ResponseWriter, r *http.Request,
 	gridDistY := "--writers.p2g.grid_dist_y=" +
 		strconv.FormatFloat(gridSize, 'f', -1, 64)
 
-	out, err := exec.Command("pdal", "translate", f, "output",
+	out, err := exec.Command("pdal", "translate", i, "output",
 		"ground", "--filters.ground.extract=true",
 		"--filters.ground.classify=false", "-w", "writers.p2g",
 		"--writers.p2g.output_type=min", "--writers.p2g.output_format=tif",
@@ -64,11 +56,5 @@ func DtmFunction(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		fmt.Println(string(out))
 		fmt.Println(err.Error())
-	}
-
-	err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
 	}
 }

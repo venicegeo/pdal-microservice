@@ -18,7 +18,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -33,7 +32,7 @@ import (
 type functionFunc func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput)
 
-func makeFunction(fn func(http.ResponseWriter, *http.Request,
+func makeIFunction(fn func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput, string)) functionFunc {
 	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
 		msg objects.JobInput) {
@@ -50,6 +49,40 @@ func makeFunction(fn func(http.ResponseWriter, *http.Request,
 			return
 		}
 		fn(w, r, res, msg, file.Name())
+	}
+}
+
+func makeIOFunction(fn func(http.ResponseWriter, *http.Request,
+	*objects.JobOutput, objects.JobInput, string, string)) functionFunc {
+	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
+		msg objects.JobInput) {
+		file, err := os.Create("download_file.laz")
+		if err != nil {
+			utils.InternalError(w, r, *res, err.Error())
+			return
+		}
+		defer file.Close()
+
+		fileOut, err := os.Create("output.min.tif")
+		if err != nil {
+			utils.InternalError(w, r, *res, err.Error())
+			return
+		}
+		defer fileOut.Close()
+
+		err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
+		if err != nil {
+			utils.InternalError(w, r, *res, err.Error())
+			return
+		}
+
+		fn(w, r, res, msg, file.Name(), fileOut.Name())
+
+		err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
+		if err != nil {
+			utils.InternalError(w, r, *res, err.Error())
+			return
+		}
 	}
 }
 
@@ -85,23 +118,23 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	switch *msg.Function {
 	case "info":
-		makeFunction(functions.InfoFunction)(w, r, &res, msg)
-
-	case "pipeline":
-		fmt.Println("pipeline not implemented yet")
+		makeIFunction(functions.InfoFunction)(w, r, &res, msg)
 
 	case "ground":
-		makeFunction(functions.GroundFunction)(w, r, &res, msg)
+		makeIOFunction(functions.GroundFunction)(w, r, &res, msg)
 
 	case "height":
-		makeFunction(functions.HeightFunction)(w, r, &res, msg)
+		makeIOFunction(functions.HeightFunction)(w, r, &res, msg)
 
 	case "dtm":
-		makeFunction(functions.DtmFunction)(w, r, &res, msg)
+		makeIOFunction(functions.DtmFunction)(w, r, &res, msg)
+
+	// list available functions
+
+	// list options for named function
 
 	default:
-		utils.BadRequest(w, r, res,
-			"Only the info and pipeline functions are supported at this time")
+		utils.BadRequest(w, r, res, "Send message telling user to pass 'list' as the function to see a list of available functions.")
 		return
 	}
 

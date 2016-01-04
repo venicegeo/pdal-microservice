@@ -19,7 +19,6 @@ package functions
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"os/exec"
 
 	"github.com/venicegeo/pzsvc-pdal/objects"
@@ -28,26 +27,13 @@ import (
 
 // HeightFunction implements pdal height.
 func HeightFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput, f string) {
-	fileOut, err := os.Create("output_file.laz")
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-	defer fileOut.Close()
-
-	out, err := exec.Command("pdal", "translate", f, fileOut.Name(),
+	res *objects.JobOutput, msg objects.JobInput, i, o string) {
+	out, err := exec.Command("pdal", "translate", i, o,
 		"ground", "height", "ferry",
 		"--filters.ferry.dimensions=Height=Z", "-v10", "--debug").CombinedOutput()
 
 	if err != nil {
 		fmt.Println(string(out))
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-
-	err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
-	if err != nil {
 		utils.InternalError(w, r, *res, err.Error())
 		return
 	}
