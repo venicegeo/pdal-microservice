@@ -22,7 +22,6 @@ import (
 	"os/exec"
 
 	"github.com/venicegeo/pzsvc-pdal/objects"
-	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
 // HeightFunction implements pdal height.
@@ -34,7 +33,6 @@ func HeightFunction(w http.ResponseWriter, r *http.Request,
 
 	if err != nil {
 		fmt.Println(string(out))
-		utils.InternalError(w, r, *res, err.Error())
-		return
+		fmt.Println(err.Error())
 	}
 }

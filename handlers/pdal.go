@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
@@ -36,7 +37,9 @@ func makeIFunction(fn func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput, string)) functionFunc {
 	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
 		msg objects.JobInput) {
-		file, err := os.Create("download_file.laz")
+		keySlice := strings.Split(msg.Source.Key, "/")
+		inputName := keySlice[len(keySlice)-1]
+		file, err := os.Create(inputName)
 		if err != nil {
 			utils.InternalError(w, r, *res, err.Error())
 			return
@@ -56,14 +59,18 @@ func makeIOFunction(fn func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput, string, string)) functionFunc {
 	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
 		msg objects.JobInput) {
-		file, err := os.Create("download_file.laz")
+		keySlice := strings.Split(msg.Source.Key, "/")
+		inputName := keySlice[len(keySlice)-1]
+		file, err := os.Create(inputName)
 		if err != nil {
 			utils.InternalError(w, r, *res, err.Error())
 			return
 		}
 		defer file.Close()
 
-		fileOut, err := os.Create("output.min.tif")
+		keySlice = strings.Split(msg.Destination.Key, "/")
+		outputName := keySlice[len(keySlice)-1]
+		fileOut, err := os.Create(outputName)
 		if err != nil {
 			utils.InternalError(w, r, *res, err.Error())
 			return
