@@ -27,6 +27,15 @@ import (
 	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
+// groundOptions defines options for Ground segmentation.
+type groundOptions struct {
+	CellSize        *float64 `json:"cell_size"`
+	InitialDistance *float64 `json:"initial_distance"`
+	MaxDistance     *float64 `json:"max_distance"`
+	MaxWindowSize   *float64 `json:"max_window_size"`
+	Slope           *float64 `json:"slope"`
+}
+
 // GroundFunction implements pdal ground.
 func GroundFunction(w http.ResponseWriter, r *http.Request,
 	res *objects.JobOutput, msg objects.JobInput, i, o string) {
@@ -36,7 +45,7 @@ func GroundFunction(w http.ResponseWriter, r *http.Request,
 	maxWindowSize := 33.0
 	slope := 1.0
 	if msg.Options != nil {
-		var opts objects.GroundOptions
+		var opts groundOptions
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
 			utils.BadRequest(w, r, *res, err.Error())
 			return

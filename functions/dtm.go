@@ -27,12 +27,17 @@ import (
 	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
+// dtmOptions defines options for the DTM generation resource.
+type dtmOptions struct {
+	GridSize *float64 `json:"grid_size"`
+}
+
 // DtmFunction implements pdal dtm.
 func DtmFunction(w http.ResponseWriter, r *http.Request,
 	res *objects.JobOutput, msg objects.JobInput, i, o string) {
 	gridSize := 1.0
 	if msg.Options != nil {
-		var opts objects.DtmOptions
+		var opts dtmOptions
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
 			utils.BadRequest(w, r, *res, err.Error())
 			return

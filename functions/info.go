@@ -28,6 +28,13 @@ import (
 	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
+// infoOptions defines options for Info.
+type infoOptions struct {
+	Boundary *bool `json:"boundary"`
+	Metadata *bool `json:"metadata"`
+	Schema   *bool `json:"schema"`
+}
+
 // InfoFunction implements pdal info.
 func InfoFunction(w http.ResponseWriter, r *http.Request,
 	res *objects.JobOutput, msg objects.JobInput, i, o string) {
@@ -35,7 +42,7 @@ func InfoFunction(w http.ResponseWriter, r *http.Request,
 	metadata := false
 	schema := false
 	if msg.Options != nil {
-		var opts objects.InfoOptions
+		var opts infoOptions
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
 			utils.BadRequest(w, r, *res, err.Error())
 			return

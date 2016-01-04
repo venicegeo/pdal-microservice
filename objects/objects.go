@@ -47,27 +47,6 @@ type S3Bucket struct {
 	Key    string `json:"key"`
 }
 
-// DtmOptions defines options for the DTM generation resource.
-type DtmOptions struct {
-	GridSize *float64 `json:"grid_size"`
-}
-
-// GroundOptions defines options for Ground segmentation.
-type GroundOptions struct {
-	CellSize        *float64 `json:"cell_size"`
-	InitialDistance *float64 `json:"initial_distance"`
-	MaxDistance     *float64 `json:"max_distance"`
-	MaxWindowSize   *float64 `json:"max_window_size"`
-	Slope           *float64 `json:"slope"`
-}
-
-// InfoOptions defines options for Info.
-type InfoOptions struct {
-	Boundary *bool `json:"boundary"`
-	Metadata *bool `json:"metadata"`
-	Schema   *bool `json:"schema"`
-}
-
 // JobInput defines the expected input JSON structure.
 // We currently support S3 input (bucket/key), though provider-specific (e.g.,
 // GRiD) may be legitimate.
