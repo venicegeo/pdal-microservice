@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strconv"
 	"time"
 
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
@@ -34,76 +33,6 @@ import (
 
 type functionFunc func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput)
-
-func heightFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput, f string) {
-	fileOut, err := os.Create("output_file.laz")
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-	defer fileOut.Close()
-
-	out, err := exec.Command("pdal", "translate", f, fileOut.Name(),
-		"ground", "height", "ferry",
-		"--filters.ferry.dimensions=Height=Z", "-v10", "--debug").CombinedOutput()
-
-	if err != nil {
-		fmt.Println(string(out))
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-
-	err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-}
-
-func dtmFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput, f string) {
-	fileOut, err := os.Create("output.min.tif")
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-	defer fileOut.Close()
-
-	gridSize := 1.0
-	if msg.Options != nil {
-		var opts objects.DtmOptions
-		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			utils.BadRequest(w, r, *res, err.Error())
-			return
-		}
-		if opts.GridSize != nil {
-			gridSize = *opts.GridSize
-		}
-	}
-	fmt.Println(gridSize)
-	gridDistX := "--writers.p2g.grid_dist_x=" +
-		strconv.FormatFloat(gridSize, 'f', -1, 64)
-	gridDistY := "--writers.p2g.grid_dist_y=" +
-		strconv.FormatFloat(gridSize, 'f', -1, 64)
-
-	out, err := exec.Command("pdal", "translate", f, "output",
-		"ground", "--filters.ground.extract=true",
-		"--filters.ground.classify=false", "-w", "writers.p2g",
-		"--writers.p2g.output_type=min", "--writers.p2g.output_format=tif",
-		gridDistX, gridDistY, "-v10", "--debug").CombinedOutput()
-
-	if err != nil {
-		fmt.Println(string(out))
-		fmt.Println(err.Error())
-	}
-
-	err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
-	if err != nil {
-		utils.InternalError(w, r, *res, err.Error())
-		return
-	}
-}
 
 func makeFunction(fn func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput, string)) functionFunc {
@@ -166,7 +95,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		makeFunction(functions.GroundFunction)(w, r, &res, msg)
 
 	case "height":
-		makeFunction(heightFunction)(w, r, &res, msg)
+		makeFunction(functions.HeightFunction)(w, r, &res, msg)
 
 	case "groundopts":
 		_, err := exec.Command("pdal",
@@ -178,7 +107,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 
 	case "dtm":
-		makeFunction(dtmFunction)(w, r, &res, msg)
+		makeFunction(functions.DtmFunction)(w, r, &res, msg)
 
 	/*
 		I get a bad_alloc here, but only via go test. The same command run natively
