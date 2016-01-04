@@ -29,6 +29,8 @@ import (
 
 // DartOptions defines options for dart sampling.
 type DartOptions struct {
+	// Radius is minimum distance criteria. No two points in the sampled point
+	// cloud will be closer than the specified radius.
 	Radius float64 `json:"radius"`
 }
 
