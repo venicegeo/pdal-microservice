@@ -147,6 +147,32 @@ func groundFunction(w http.ResponseWriter, r *http.Request,
 	}
 }
 
+func heightFunction(w http.ResponseWriter, r *http.Request,
+	res *objects.JobOutput, msg objects.JobInput, f string) {
+	fileOut, err := os.Create("output_file.laz")
+	if err != nil {
+		utils.InternalError(w, r, *res, err.Error())
+		return
+	}
+	defer fileOut.Close()
+
+	out, err := exec.Command("pdal", "translate", f, fileOut.Name(),
+		"ground", "height", "ferry",
+		"--filters.ferry.dimensions=Height=Z", "-v10", "--debug").CombinedOutput()
+
+	if err != nil {
+		fmt.Println(string(out))
+		utils.InternalError(w, r, *res, err.Error())
+		return
+	}
+
+	err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
+	if err != nil {
+		utils.InternalError(w, r, *res, err.Error())
+		return
+	}
+}
+
 func makeFunction(fn func(http.ResponseWriter, *http.Request,
 	*objects.JobOutput, objects.JobInput, string)) functionFunc {
 	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
@@ -208,41 +234,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		makeFunction(groundFunction)(w, r, &res, msg)
 
 	case "height":
-		file, err := os.Create("download_file.laz")
-		if err != nil {
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
-		defer file.Close()
-
-		fileOut, err := os.Create("output_file.laz")
-		if err != nil {
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
-		defer fileOut.Close()
-
-		err = utils.S3Download(file, msg.Source.Bucket, msg.Source.Key)
-		if err != nil {
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
-
-		out, err := exec.Command("pdal", "translate", file.Name(), fileOut.Name(),
-			"ground", "height", "ferry",
-			"--filters.ferry.dimensions=Height=Z", "-v10", "--debug").CombinedOutput()
-
-		if err != nil {
-			fmt.Println(string(out))
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
-
-		err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
-		if err != nil {
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
+		makeFunction(heightFunction)(w, r, &res, msg)
 
 	case "groundopts":
 		_, err := exec.Command("pdal",
