@@ -1,2 +1,3 @@
 pdal
-handlers/download_file.laz
+handlers/*.laz
+handlers/bad-file
