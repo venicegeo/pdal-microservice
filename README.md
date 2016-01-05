@@ -2,13 +2,21 @@
 
 # PDAL Microservice
 
-At this point, this repository serves as a sandbox for developing PDAL-based microservices for Piazza.
+Providing a [PDAL](http://pdal.io)-based microservice for Piazza.
 
-The going in assumption is that we will receive some message from the dispatcher indicating that a point cloud service has been requested. We will have the path to the data and a description of the task to be performed.
-
-While not the only game in town, PDAL will provide the heavy lifting for most of our point cloud services. We have created a Dockerfile in `venicegeo/dockerfiles/minimal-pdal` that generates a Docker image consisting of PDAL with it's required dependencies and a handful of high-priority plugins (LAZ and NITF support). This in turn serves as the base image for our microservice, which is written in Go.
+The going in assumption is that we will receive some message from the [dispatcher](https://github.com/venicegeo/pz-dispatcher) indicating that a point cloud service has been requested. We will have the path to the data and a description of the task to be performed. We also have a responsibility to update the [job manager](https://github.com/venicegeo/pz-jobmanager) periodically with status updates.
 
 # Install
+
+While not the only game in town, PDAL will provide the heavy lifting for most of our point cloud services. We have created a [Dockerfile](https://github.com/venicegeo/dockerfiles/blob/master/full-pdal/Dockerfile) that generates a Docker image consisting of PDAL with it's required dependencies and a handful of high-priority plugins (LAZ, NITF, and PCL support). It can be built with the following commands
+
+```console
+$ git clone https://github.com/venicegeo/dockerfiles/full-pdal
+$ cd full-pdal
+$ docker build -t venicegeo/full-pdal .
+```
+
+This in turn serves as the base image for our microservice, which is written in Go.
 
 ```console
 $ git clone https://github.com/venicegeo/pzsvc-pdal
@@ -196,11 +204,9 @@ $ godep save -r ./...
 
 to update the Godeps folder and all import paths.
 
-# Way Forward
-
-Clearly, this is pretty simplistic. We've hardcoded lots of things and have skimped on the error checking. But it demonstrates the capability. Moving forward, we will begin to hash out details of how the PDAL tasks are delivered and make it do some more interesting things, namely executing PDAL pipelines.
-
 # Register Service
+
+At some point, we will need to register this service with the [service registry](https://github.com/venicegeo/pz-serviceregistry), which expects the following the last I checked.
 
 ```json
 {
