@@ -156,9 +156,16 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	// list options for named function
 	case "options":
-		// start with only info options as a test
-		foo := functions.NewGroundOptions()
-		bar, _ := json.Marshal(foo)
+		type AllOptions struct {
+			Ground *functions.GroundOptions `json:"ground,omitempty"`
+			Info   *functions.InfoOptions   `json:"info,omitempty"`
+			Dtm    *functions.DtmOptions    `json:"dtm,omitempty"`
+		}
+		var a AllOptions
+		a.Ground = functions.NewGroundOptions()
+		a.Info = functions.NewInfoOptions()
+		a.Dtm = functions.NewDtmOptions()
+		bar, _ := json.Marshal(a)
 		if err := json.Unmarshal(bar, &res.Response); err != nil {
 			log.Fatal(err)
 		}
