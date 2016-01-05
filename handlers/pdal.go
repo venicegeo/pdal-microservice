@@ -147,6 +147,9 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	case "dart":
 		makeFunction(functions.DartFunction)(w, r, &res, msg)
 
+	case "translate":
+		makeFunction(functions.TranslateFunction)(w, r, &res, msg)
+
 	case "list":
 		out := []byte(`{"functions":["info","ground","height","dtm","dart","list"]}`)
 
