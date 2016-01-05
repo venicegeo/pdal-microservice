@@ -47,27 +47,6 @@ func TestBasicInfo(t *testing.T) {
 	}
 }
 
-func TestBasicPipeline(t *testing.T) {
-	userJSON := `{
-		"source":
-		{
-			"bucket": "venicegeo-sample-data",
-			"key": "pointcloud/samp71-utm.laz"
-		},
-		"function": "pipeline"
-	}`
-	reader := strings.NewReader(userJSON)
-	router := httprouter.New()
-	router.POST("/pdal", PdalHandler)
-	req, _ := http.NewRequest("POST", "/pdal", reader)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-	fmt.Println(w.Body)
-	if w.Code != http.StatusOK {
-		t.Errorf("StatusOK expected: %d", w.Code)
-	}
-}
-
 func TestBasicGround(t *testing.T) {
 	userJSON := `{
 		"source":
@@ -118,51 +97,6 @@ func TestBasicHeight(t *testing.T) {
 		t.Errorf("StatusOK expected: %d", w.Code)
 	}
 }
-
-func TestGroundOptions(t *testing.T) {
-	userJSON := `{
-		"source":
-		{
-			"bucket": "venicegeo-sample-data",
-			"key": "pointcloud/samp71-utm.laz"
-		},
-		"function": "groundopts"
-	}`
-	reader := strings.NewReader(userJSON)
-	router := httprouter.New()
-	router.POST("/pdal", PdalHandler)
-	req, _ := http.NewRequest("POST", "/pdal", reader)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-	fmt.Println(w.Body)
-	if w.Code != http.StatusOK {
-		t.Errorf("StatusOK expected: %d", w.Code)
-	}
-}
-
-/*
-I get a bad_alloc here, but only via go test. The same command run natively works fine.
-func TestDrivers(t *testing.T) {
-	userJSON := `{
-		"source":
-		{
-			"bucket": "venicegeo-sample-data",
-			"key": "pointcloud/samp71-utm.laz"
-		},
-		"function": "drivers"
-	}`
-	reader := strings.NewReader(userJSON)
-	router := httprouter.New()
-	router.POST("/pdal", PdalHandler)
-	req, _ := http.NewRequest("POST", "/pdal", reader)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-	fmt.Println(w.Body)
-	if w.Code != http.StatusOK {
-		t.Errorf("StatusOK expected: %d", w.Code)
-	}
-}
-*/
 
 func TestNoFunctionField(t *testing.T) {
 	userJSON := `{
