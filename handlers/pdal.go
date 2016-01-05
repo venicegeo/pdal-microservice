@@ -132,8 +132,11 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	// Make/execute the requested function.
 	switch *msg.Function {
-	case "info":
-		makeFunction(functions.InfoFunction)(w, r, &res, msg)
+	case "dart":
+		makeFunction(functions.DartFunction)(w, r, &res, msg)
+
+	case "dtm":
+		makeFunction(functions.DtmFunction)(w, r, &res, msg)
 
 	case "ground":
 		makeFunction(functions.GroundFunction)(w, r, &res, msg)
@@ -141,23 +144,16 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	case "height":
 		makeFunction(functions.HeightFunction)(w, r, &res, msg)
 
-	case "dtm":
-		makeFunction(functions.DtmFunction)(w, r, &res, msg)
-
-	case "dart":
-		makeFunction(functions.DartFunction)(w, r, &res, msg)
-
-	case "translate":
-		makeFunction(functions.TranslateFunction)(w, r, &res, msg)
+	case "info":
+		makeFunction(functions.InfoFunction)(w, r, &res, msg)
 
 	case "list":
-		out := []byte(`{"functions":["info","ground","height","dtm","dart","list"]}`)
+		out := []byte(`{"functions":["info","ground","height","dtm","dart","list","translate"]}`)
 
 		if err := json.Unmarshal(out, &res.Response); err != nil {
 			log.Fatal(err)
 		}
 
-	// list options for named function
 	case "options":
 		type AllOptions struct {
 			Ground *functions.GroundOptions `json:"ground,omitempty"`
@@ -172,6 +168,9 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		if err := json.Unmarshal(bar, &res.Response); err != nil {
 			log.Fatal(err)
 		}
+
+	case "translate":
+		makeFunction(functions.TranslateFunction)(w, r, &res, msg)
 
 	// An unrecognized function will result in 400 error, with message explaining
 	// how to list available functions.
