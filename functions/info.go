@@ -24,8 +24,8 @@ import (
 	"net/http"
 	"os/exec"
 
-	"github.com/venicegeo/pzsvc-pdal/objects"
-	"github.com/venicegeo/pzsvc-pdal/utils"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/objects"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/utils"
 )
 
 // InfoOptions defines options for Info.

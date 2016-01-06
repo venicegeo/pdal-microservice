@@ -23,8 +23,8 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/venicegeo/pzsvc-pdal/objects"
-	"github.com/venicegeo/pzsvc-pdal/utils"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/objects"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/utils"
 )
 
 // GroundOptions defines options for Ground segmentation.

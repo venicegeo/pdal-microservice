@@ -28,7 +28,7 @@ import (
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/session"
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3"
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/venicegeo/pzsvc-pdal/objects"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/objects"
 )
 
 // UpdateJobManager handles PDAL status updates.
@@ -72,7 +72,7 @@ InternalError handles internal server errors.
 
 All internal server errors result in an error in the eyes of the JobManager. The ResponseWriter echos some key aspects of the Request (e.g., input, start time) and appends StatusInternalServerError (500) as well as a message to the JobOutput, which is returned as JSON.
 */
-func InternalError(w http.ResponseWriter, r *http.Request, res objects.JobOutput, message string) {
+func InternalError(w http.ResponseWriter, r *http.Request, res *objects.JobOutput, message string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusInternalServerError)
 	res.Code = http.StatusInternalServerError

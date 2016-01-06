@@ -26,9 +26,9 @@ import (
 	"time"
 
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/objects"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/utils"
 	"github.com/venicegeo/pzsvc-pdal/functions"
-	"github.com/venicegeo/pzsvc-pdal/objects"
-	"github.com/venicegeo/pzsvc-pdal/utils"
 )
 
 type functionFunc func(http.ResponseWriter, *http.Request,
@@ -50,7 +50,7 @@ func makeFunction(fn func(http.ResponseWriter, *http.Request,
 		inputName = keySlice[len(keySlice)-1]
 		fileIn, err := os.Create(inputName)
 		if err != nil {
-			utils.InternalError(w, r, *res, err.Error())
+			utils.InternalError(w, r, res, err.Error())
 			return
 		}
 		defer fileIn.Close()
@@ -63,7 +63,7 @@ func makeFunction(fn func(http.ResponseWriter, *http.Request,
 			outputName = keySlice[len(keySlice)-1]
 			fileOut, err = os.Create(outputName)
 			if err != nil {
-				utils.InternalError(w, r, *res, err.Error())
+				utils.InternalError(w, r, res, err.Error())
 				return
 			}
 			defer fileOut.Close()
@@ -72,7 +72,7 @@ func makeFunction(fn func(http.ResponseWriter, *http.Request,
 		// Download the source data from S3, throwing 500 on error.
 		err = utils.S3Download(fileIn, msg.Source.Bucket, msg.Source.Key)
 		if err != nil {
-			utils.InternalError(w, r, *res, err.Error())
+			utils.InternalError(w, r, res, err.Error())
 			return
 		}
 
@@ -84,7 +84,7 @@ func makeFunction(fn func(http.ResponseWriter, *http.Request,
 		if len(msg.Destination.Key) > 0 {
 			err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
 			if err != nil {
-				utils.InternalError(w, r, *res, err.Error())
+				utils.InternalError(w, r, res, err.Error())
 				return
 			}
 		}
@@ -108,7 +108,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Throw 500 if we cannot read the body.
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		utils.InternalError(w, r, res, err.Error())
+		utils.InternalError(w, r, &res, err.Error())
 		return
 	}
 

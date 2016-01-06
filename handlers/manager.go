@@ -23,7 +23,7 @@ import (
 	"net/http"
 
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
-	"github.com/venicegeo/pzsvc-pdal/objects"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/objects"
 )
 
 // JobManagerHandler handles JobManager updates.
