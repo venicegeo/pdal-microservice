@@ -18,11 +18,8 @@ package handlers
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
@@ -31,66 +28,6 @@ import (
 	"github.com/venicegeo/pzsvc-pdal/functions"
 )
 
-type functionFunc func(http.ResponseWriter, *http.Request,
-	*objects.JobOutput, objects.JobInput)
-
-// makeFunction wraps the individual PDAL functions.
-// Parse the input and output filenames, creating files as needed. Download the
-// input data and upload the output data.
-func makeFunction(fn func(http.ResponseWriter, *http.Request,
-	*objects.JobOutput, objects.JobInput, string, string)) functionFunc {
-	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
-		msg objects.JobInput) {
-		var inputName, outputName string
-		var fileIn, fileOut *os.File
-
-		// Split the source S3 key string, interpreting the last element as the
-		// input filename. Create the input file, throwing 500 on error.
-		keySlice := strings.Split(msg.Source.Key, "/")
-		inputName = keySlice[len(keySlice)-1]
-		fileIn, err := os.Create(inputName)
-		if err != nil {
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
-		defer fileIn.Close()
-
-		// If provided, split the destination S3 key string, interpreting the last
-		// element as the output filename. Create the output file, throwing 500 on
-		// error.
-		if len(msg.Destination.Key) > 0 {
-			keySlice = strings.Split(msg.Destination.Key, "/")
-			outputName = keySlice[len(keySlice)-1]
-			fileOut, err = os.Create(outputName)
-			if err != nil {
-				utils.InternalError(w, r, res, err.Error())
-				return
-			}
-			defer fileOut.Close()
-		}
-
-		// Download the source data from S3, throwing 500 on error.
-		err = utils.S3Download(fileIn, msg.Source.Bucket, msg.Source.Key)
-		if err != nil {
-			utils.InternalError(w, r, res, err.Error())
-			return
-		}
-
-		// Run the PDAL function.
-		fn(w, r, res, msg, inputName, outputName)
-
-		// If an output has been created, upload the destination data to S3,
-		// throwing 500 on error.
-		if len(msg.Destination.Key) > 0 {
-			err = utils.S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
-			if err != nil {
-				utils.InternalError(w, r, res, err.Error())
-				return
-			}
-		}
-	}
-}
-
 // PdalHandler handles PDAL jobs.
 func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Create the job output message. No matter what happens, we should always be
@@ -98,26 +35,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var res objects.JobOutput
 	res.StartedAt = time.Now()
 
-	// There should always be a body, else how are we to know what to do? Throw
-	// 400 if missing.
-	if r.Body == nil {
-		utils.BadRequest(w, r, res, "No JSON")
-		return
-	}
-
-	// Throw 500 if we cannot read the body.
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		utils.InternalError(w, r, &res, err.Error())
-		return
-	}
-
-	// Throw 400 if we cannot unmarshal the body as a valid JobInput.
-	var msg objects.JobInput
-	if err := json.Unmarshal(b, &msg); err != nil {
-		utils.BadRequest(w, r, res, err.Error())
-		return
-	}
+	msg := utils.GetJobInput(w, r, res)
 
 	// Throw 400 if the JobInput does not specify a function.
 	if msg.Function == nil {
@@ -133,19 +51,19 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Make/execute the requested function.
 	switch *msg.Function {
 	case "dart":
-		makeFunction(functions.DartFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.DartFunction)(w, r, &res, msg)
 
 	case "dtm":
-		makeFunction(functions.DtmFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.DtmFunction)(w, r, &res, msg)
 
 	case "ground":
-		makeFunction(functions.GroundFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.GroundFunction)(w, r, &res, msg)
 
 	case "height":
-		makeFunction(functions.HeightFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.HeightFunction)(w, r, &res, msg)
 
 	case "info":
-		makeFunction(functions.InfoFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.InfoFunction)(w, r, &res, msg)
 
 	case "list":
 		out := []byte(`{"functions":["info","ground","height","dtm","dart","list","translate"]}`)
@@ -170,7 +88,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 
 	case "translate":
-		makeFunction(functions.TranslateFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.TranslateFunction)(w, r, &res, msg)
 
 	// An unrecognized function will result in 400 error, with message explaining
 	// how to list available functions.

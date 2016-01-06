@@ -19,9 +19,11 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws"
 	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/aws/aws-sdk-go/aws/awserr"
@@ -141,4 +143,93 @@ func S3Upload(file *os.File, bucket, key string) error {
 	}
 	log.Println("Successfully uploaded to", result.Location)
 	return nil
+}
+
+// GetJobInput provides a common means of parsing the JobInput JSON.
+func GetJobInput(w http.ResponseWriter, r *http.Request, res objects.JobOutput) objects.JobInput {
+	var msg objects.JobInput
+
+	// There should always be a body, else how are we to know what to do? Throw
+	// 400 if missing.
+	if r.Body == nil {
+		BadRequest(w, r, res, "No JSON")
+	}
+
+	// Throw 500 if we cannot read the body.
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		InternalError(w, r, &res, err.Error())
+	}
+
+	// Throw 400 if we cannot unmarshal the body as a valid JobInput.
+	if err := json.Unmarshal(b, &msg); err != nil {
+		BadRequest(w, r, res, err.Error())
+	}
+
+	return msg
+}
+
+// ParseFilenameFromKey parses the S3 filename from the key.
+func ParseFilenameFromKey(key string) string {
+	keySlice := strings.Split(key, "/")
+	return keySlice[len(keySlice)-1]
+}
+
+// FunctionFunc defines the signature of our function creator.
+type FunctionFunc func(http.ResponseWriter, *http.Request,
+	*objects.JobOutput, objects.JobInput)
+
+// MakeFunction wraps the individual PDAL functions.
+// Parse the input and output filenames, creating files as needed. Download the
+// input data and upload the output data.
+func MakeFunction(fn func(http.ResponseWriter, *http.Request,
+	*objects.JobOutput, objects.JobInput, string, string)) FunctionFunc {
+	return func(w http.ResponseWriter, r *http.Request, res *objects.JobOutput,
+		msg objects.JobInput) {
+		var inputName, outputName string
+		var fileIn, fileOut *os.File
+
+		// Split the source S3 key string, interpreting the last element as the
+		// input filename. Create the input file, throwing 500 on error.
+		inputName = ParseFilenameFromKey(msg.Source.Key)
+		fileIn, err := os.Create(inputName)
+		if err != nil {
+			InternalError(w, r, res, err.Error())
+			return
+		}
+		defer fileIn.Close()
+
+		// If provided, split the destination S3 key string, interpreting the last
+		// element as the output filename. Create the output file, throwing 500 on
+		// error.
+		if len(msg.Destination.Key) > 0 {
+			outputName = ParseFilenameFromKey(msg.Destination.Key)
+			fileOut, err = os.Create(outputName)
+			if err != nil {
+				InternalError(w, r, res, err.Error())
+				return
+			}
+			defer fileOut.Close()
+		}
+
+		// Download the source data from S3, throwing 500 on error.
+		err = S3Download(fileIn, msg.Source.Bucket, msg.Source.Key)
+		if err != nil {
+			InternalError(w, r, res, err.Error())
+			return
+		}
+
+		// Run the PDAL function.
+		fn(w, r, res, msg, inputName, outputName)
+
+		// If an output has been created, upload the destination data to S3,
+		// throwing 500 on error.
+		if len(msg.Destination.Key) > 0 {
+			err = S3Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
+			if err != nil {
+				InternalError(w, r, res, err.Error())
+				return
+			}
+		}
+	}
 }

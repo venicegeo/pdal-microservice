@@ -67,11 +67,11 @@
 		},
 		{
 			"ImportPath": "github.com/venicegeo/pzsvc-sdk-go/objects",
-			"Rev": "62cc4b488da490b473f546e0cfab03945c4c88de"
+			"Rev": "bf5c9fbd12d2fefa3aff0dc5b67f87d2f013c47c"
 		},
 		{
 			"ImportPath": "github.com/venicegeo/pzsvc-sdk-go/utils",
-			"Rev": "62cc4b488da490b473f546e0cfab03945c4c88de"
+			"Rev": "bf5c9fbd12d2fefa3aff0dc5b67f87d2f013c47c"
 		}
 	]
 }
