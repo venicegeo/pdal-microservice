@@ -6,72 +6,13 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/aws/aws-sdk-go/aws",
-			"Comment": "v1.0.4",
-			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/endpoints",
-			"Comment": "v1.0.4",
-			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/protocol/query",
-			"Comment": "v1.0.4",
-			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/protocol/rest",
-			"Comment": "v1.0.4",
-			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/protocol/restxml",
-			"Comment": "v1.0.4",
-			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil",
-			"Comment": "v1.0.4",
-			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/signer/v4",
-			"Comment": "v1.0.4",
-			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/private/waiter",
-			"Comment": "v1.0.4",
-			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/service/s3",
-			"Comment": "v1.0.4",
-			"Rev": "999b1591218c36d5050d1ba7266eba956e65965f"
-		},
-		{
-			"ImportPath": "github.com/go-ini/ini",
-			"Comment": "v0-64-g9f4d271",
-			"Rev": "9f4d2712cf687b68fad24366f81eaee163079090"
-		},
-		{
-			"ImportPath": "github.com/jmespath/go-jmespath",
-			"Comment": "0.2.2-2-gc01cf91",
-			"Rev": "c01cf91b011868172fdcd9f41838e80c9d716264"
-		},
-		{
 			"ImportPath": "github.com/julienschmidt/httprouter",
 			"Comment": "v1.1-12-gf30ab90",
 			"Rev": "f30ab90cccbd5171771d26b6557d3c2f49e047a6"
 		},
 		{
-			"ImportPath": "github.com/venicegeo/pzsvc-sdk-go/objects",
-			"Rev": "bf5c9fbd12d2fefa3aff0dc5b67f87d2f013c47c"
-		},
-		{
-			"ImportPath": "github.com/venicegeo/pzsvc-sdk-go/utils",
-			"Rev": "bf5c9fbd12d2fefa3aff0dc5b67f87d2f013c47c"
+			"ImportPath": "github.com/venicegeo/pzsvc-sdk-go/job",
+			"Rev": "32538a8d737f9542ba7a25524bf9305bd561fb8b"
 		}
 	]
 }

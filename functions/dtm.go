@@ -23,8 +23,7 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/objects"
-	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/utils"
+	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // DtmOptions defines options for the DTM generation resource.
@@ -39,11 +38,11 @@ func NewDtmOptions() *DtmOptions {
 
 // DtmFunction implements pdal dtm.
 func DtmFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput, i, o string) {
+	res *job.OutputMsg, msg job.InputMsg, i, o string) {
 	opts := NewDtmOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			utils.BadRequest(w, r, *res, err.Error())
+			job.BadRequest(w, r, *res, err.Error())
 			return
 		}
 	}

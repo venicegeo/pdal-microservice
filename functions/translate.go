@@ -23,8 +23,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/objects"
-	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/utils"
+	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // TranslateOptions defines options for Ground segmentation.
@@ -39,11 +38,11 @@ func NewTranslateOptions() *TranslateOptions {
 
 // TranslateFunction implements pdal translate.
 func TranslateFunction(w http.ResponseWriter, r *http.Request,
-	res *objects.JobOutput, msg objects.JobInput, i, o string) {
+	res *job.OutputMsg, msg job.InputMsg, i, o string) {
 	opts := NewTranslateOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			utils.BadRequest(w, r, *res, err.Error())
+			job.BadRequest(w, r, *res, err.Error())
 			return
 		}
 	}

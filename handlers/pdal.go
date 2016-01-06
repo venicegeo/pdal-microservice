@@ -22,31 +22,31 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
-	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/objects"
-	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/utils"
+	"github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pzsvc-pdal/functions"
+	"github.com/venicegeo/pzsvc-sdk-go/job"
+	"github.com/venicegeo/pzsvc-sdk-go/utils"
 )
 
 // PdalHandler handles PDAL jobs.
 func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Create the job output message. No matter what happens, we should always be
 	// able to populate the StartedAt field.
-	var res objects.JobOutput
+	var res job.OutputMsg
 	res.StartedAt = time.Now()
 
-	msg := utils.GetJobInput(w, r, res)
+	msg := job.GetInputMsg(w, r, res)
 
 	// Throw 400 if the JobInput does not specify a function.
 	if msg.Function == nil {
-		utils.BadRequest(w, r, res, "Must provide a function")
+		job.BadRequest(w, r, res, "Must provide a function")
 		return
 	}
 
 	// If everything is okay up to this point, we will echo the JobInput in the
 	// JobOutput and mark the job as Running.
 	res.Input = msg
-	utils.UpdateJobManager(objects.Running, r)
+	job.Update(job.Running, r)
 
 	// Make/execute the requested function.
 	switch *msg.Function {
@@ -93,12 +93,12 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// An unrecognized function will result in 400 error, with message explaining
 	// how to list available functions.
 	default:
-		utils.BadRequest(w, r, res, "")
+		job.BadRequest(w, r, res, "")
 		return
 	}
 
 	// If we made it here, we can record the FinishedAt time, notify the job
 	// manager of success, and return 200.
 	res.FinishedAt = time.Now()
-	utils.Okay(w, r, res, "Success!")
+	job.Okay(w, r, res, "Success!")
 }

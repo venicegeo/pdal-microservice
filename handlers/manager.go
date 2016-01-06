@@ -22,8 +22,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
-	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/objects"
+	"github.com/julienschmidt/httprouter"
+	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // JobManagerHandler handles JobManager updates.
@@ -33,7 +33,7 @@ func JobManagerHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		log.Fatal(err)
 	}
 
-	var msg objects.JobManagerUpdate
+	var msg job.UpdateMsg
 	if err := json.Unmarshal(b, &msg); err != nil {
 		log.Fatal(err)
 	}
