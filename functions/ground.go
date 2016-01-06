@@ -46,8 +46,8 @@ func NewGroundOptions() *GroundOptions {
 	}
 }
 
-// GroundFunction implements pdal ground.
-func GroundFunction(w http.ResponseWriter, r *http.Request,
+// Ground implements pdal ground.
+func Ground(w http.ResponseWriter, r *http.Request,
 	res *job.OutputMsg, msg job.InputMsg, i, o string) {
 	opts := NewGroundOptions()
 	if msg.Options != nil {

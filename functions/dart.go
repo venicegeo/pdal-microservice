@@ -38,8 +38,8 @@ func NewDartOptions() *DartOptions {
 	return &DartOptions{Radius: 1.0}
 }
 
-// DartFunction implements pdal height.
-func DartFunction(w http.ResponseWriter, r *http.Request,
+// Dart implements pdal height.
+func Dart(w http.ResponseWriter, r *http.Request,
 	res *job.OutputMsg, msg job.InputMsg, i, o string) {
 	opts := NewDartOptions()
 	if msg.Options != nil {

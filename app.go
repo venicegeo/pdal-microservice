@@ -21,6 +21,37 @@ Examples
 
   $ curl -v -X POST -H "Content-Type: application/json" \
     -d '{"source":{"bucket":"venicegeo-sample-data","key":"pointcloud/samp11-utm.laz"},"function":"info"}' http://hostIP:8080/pdal
+
+We shall see where we land with the input and output message for the job manager, but for now, we are expecting something along these lines.
+
+Input:
+
+	{
+		"source": {
+			"bucket": "venicegeo-sample-data",
+			"key": "pointcloud/samp11-utm.laz"
+		},
+		"function": "ground",
+		"options": {
+			"slope": 0.5
+		},
+		"destination": {
+			"bucket": "venicegeo-sample-data",
+			"key" "temp/output.laz"
+		}
+	}
+
+Output:
+
+	{
+		"input": <echo the input message>,
+		"started_at": "2015-12-23T18:07:36.987565884Z",
+		"finished_at": "2015-12-23T18:07:38.111658707Z",
+		"code": 200,
+		"message": "Success!"
+	}
+
+These messages are known to be incomplete at the moment. I'm sure there will be things like job IDs, etc. that have not been included at the moment. This is a good starting point though.
 */
 package main
 

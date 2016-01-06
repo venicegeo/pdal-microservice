@@ -24,8 +24,8 @@ import (
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
-// HeightFunction implements pdal height.
-func HeightFunction(w http.ResponseWriter, r *http.Request,
+// Height implements pdal height.
+func Height(w http.ResponseWriter, r *http.Request,
 	res *job.OutputMsg, msg job.InputMsg, i, o string) {
 	out, err := exec.Command("pdal", "translate", i, o,
 		"ground", "height", "ferry",

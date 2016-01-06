@@ -1,4 +1,5 @@
 [![GoDoc](https://godoc.org/github.com/venicegeo/pzsvc-pdal?status.svg)](https://godoc.org/github.com/venicegeo/pzsvc-pdal)
+[![Apache V2 License](http://img.shields.io/badge/license-Apache%20V2-blue.svg)](https://github.com/venicegeo/pzsvc-pdal/blob/master/LICENSE)
 
 # PDAL Microservice
 

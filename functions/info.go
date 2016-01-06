@@ -43,8 +43,8 @@ func NewInfoOptions() *InfoOptions {
 	}
 }
 
-// InfoFunction implements pdal info.
-func InfoFunction(w http.ResponseWriter, r *http.Request,
+// Info implements pdal info.
+func Info(w http.ResponseWriter, r *http.Request,
 	res *job.OutputMsg, msg job.InputMsg, i, o string) {
 	opts := NewInfoOptions()
 	if msg.Options != nil {

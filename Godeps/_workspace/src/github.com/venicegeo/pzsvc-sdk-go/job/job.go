@@ -47,28 +47,28 @@ func (status StatusType) String() string {
 // S3Bucket defines the expected JSON structure for S3 buckets.
 // An S3 bucket can be used for source (input) and destination (output) files.
 type S3Bucket struct {
-	Bucket string `json:"bucket"`
-	Key    string `json:"key"`
+	Bucket string `json:"bucket,omitempty"`
+	Key    string `json:"key,omitempty"`
 }
 
 // InputMsg defines the expected input JSON structure.
 // We currently support S3 input (bucket/key), though provider-specific (e.g.,
 // GRiD) may be legitimate.
 type InputMsg struct {
-	Source      S3Bucket         `json:"source"`
-	Function    *string          `json:"function"`
-	Options     *json.RawMessage `json:"options"`
-	Destination S3Bucket         `json:"destination"`
+	Source      S3Bucket         `json:"source,omitempty"`
+	Function    *string          `json:"function,omitempty"`
+	Options     *json.RawMessage `json:"options,omitempty"`
+	Destination S3Bucket         `json:"destination,omitempty"`
 }
 
 // OutputMsg defines the expected output JSON structure.
 type OutputMsg struct {
-	Input      InputMsg                    `json:"input"`
-	StartedAt  time.Time                   `json:"started_at"`
-	FinishedAt time.Time                   `json:"finished_at"`
-	Code       int                         `json:"code"`
-	Message    string                      `json:"message"`
-	Response   map[string]*json.RawMessage `json:"response"`
+	Input      InputMsg                    `json:"input,omitempty"`
+	StartedAt  time.Time                   `json:"started_at,omitempty"`
+	FinishedAt time.Time                   `json:"finished_at,omitempty"`
+	Code       int                         `json:"code,omitempty"`
+	Message    string                      `json:"message,omitempty"`
+	Response   map[string]*json.RawMessage `json:"response,omitempty"`
 }
 
 // UpdateMsg defines the expected output JSON structure for updating the JobManager.

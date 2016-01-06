@@ -51,19 +51,19 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Make/execute the requested function.
 	switch *msg.Function {
 	case "dart":
-		utils.MakeFunction(functions.DartFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.Dart)(w, r, &res, msg)
 
 	case "dtm":
-		utils.MakeFunction(functions.DtmFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.Dtm)(w, r, &res, msg)
 
 	case "ground":
-		utils.MakeFunction(functions.GroundFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.Ground)(w, r, &res, msg)
 
 	case "height":
-		utils.MakeFunction(functions.HeightFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.Height)(w, r, &res, msg)
 
 	case "info":
-		utils.MakeFunction(functions.InfoFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.Info)(w, r, &res, msg)
 
 	case "list":
 		out := []byte(`{"functions":["info","ground","height","dtm","dart","list","translate"]}`)
@@ -88,7 +88,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 
 	case "translate":
-		utils.MakeFunction(functions.TranslateFunction)(w, r, &res, msg)
+		utils.MakeFunction(functions.Translate)(w, r, &res, msg)
 
 	// An unrecognized function will result in 400 error, with message explaining
 	// how to list available functions.

@@ -36,8 +36,8 @@ func NewTranslateOptions() *TranslateOptions {
 	return &TranslateOptions{Args: ""}
 }
 
-// TranslateFunction implements pdal translate.
-func TranslateFunction(w http.ResponseWriter, r *http.Request,
+// Translate implements pdal translate.
+func Translate(w http.ResponseWriter, r *http.Request,
 	res *job.OutputMsg, msg job.InputMsg, i, o string) {
 	opts := NewTranslateOptions()
 	if msg.Options != nil {

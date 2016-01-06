@@ -36,8 +36,8 @@ func NewDtmOptions() *DtmOptions {
 	return &DtmOptions{GridSize: 1.0}
 }
 
-// DtmFunction implements pdal dtm.
-func DtmFunction(w http.ResponseWriter, r *http.Request,
+// Dtm implements pdal dtm.
+func Dtm(w http.ResponseWriter, r *http.Request,
 	res *job.OutputMsg, msg job.InputMsg, i, o string) {
 	opts := NewDtmOptions()
 	if msg.Options != nil {
