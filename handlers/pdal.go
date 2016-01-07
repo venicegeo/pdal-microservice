@@ -17,8 +17,6 @@ limitations under the License.
 package handlers
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
@@ -64,28 +62,6 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	case "info":
 		utils.MakeFunction(functions.Info)(w, r, &res, msg)
-
-	case "list":
-		out := []byte(`{"functions":["info","ground","height","dtm","dart","list","translate"]}`)
-
-		if err := json.Unmarshal(out, &res.Response); err != nil {
-			log.Fatal(err)
-		}
-
-	case "options":
-		type AllOptions struct {
-			Ground *functions.GroundOptions `json:"ground,omitempty"`
-			Info   *functions.InfoOptions   `json:"info,omitempty"`
-			Dtm    *functions.DtmOptions    `json:"dtm,omitempty"`
-		}
-		var a AllOptions
-		a.Ground = functions.NewGroundOptions()
-		a.Info = functions.NewInfoOptions()
-		a.Dtm = functions.NewDtmOptions()
-		bar, _ := json.Marshal(a)
-		if err := json.Unmarshal(bar, &res.Response); err != nil {
-			log.Fatal(err)
-		}
 
 	case "translate":
 		utils.MakeFunction(functions.Translate)(w, r, &res, msg)

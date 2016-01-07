@@ -222,28 +222,3 @@ $ godep save -r ./...
 ```
 
 to update the Godeps folder and all import paths.
-
-# Register Service
-
-At some point, we will need to register this service with the [service registry](https://github.com/venicegeo/pz-serviceregistry), which expects the following the last I checked.
-
-```json
-{
-  "name": "pdal",
-  "serviceID": 0,
-  "desc": "Process point cloud data using PDAL.",
-  "url": "https://api.piazzageo.io/v1/pdal",
-  "poc": "",
-  "networkAvailable": "TBD",
-  "tags": "point cloud, pdal, lidar",
-  "classType": "Unclassified",
-  "parms": "TBD",
-  "termData": "TBD",
-  "availability": "UP",
-  "serviceQoS": "Development",
-  "credentialsRequired": false,
-  "clientCert": false,
-  "preAuthRequired": false,
-  "contracts": ""
-}
-```

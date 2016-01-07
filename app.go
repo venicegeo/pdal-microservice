@@ -56,17 +56,95 @@ These messages are known to be incomplete at the moment. I'm sure there will be 
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/venicegeo/pzsvc-pdal/functions"
 	"github.com/venicegeo/pzsvc-pdal/handlers"
+	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
+
+var pdalMetadata = job.ResourceMetadata{
+	Name:                "pdal",
+	ServiceID:           "",
+	Description:         "Process point cloud data using PDAL.",
+	URL:                 "https://api.piazzageo.io/v1/pdal",
+	Networks:            "TBD",
+	QoS:                 "Development",
+	Availability:        "UP",
+	Tags:                "point cloud, pdal, lidar",
+	ClassType:           "Unclassified",
+	TermDate:            time.Now(),
+	ClientCertRequired:  false,
+	CredentialsRequired: false,
+	PreAuthRequired:     false,
+	Contracts:           "",
+	Method:              "",
+	MimeType:            "",
+	Params:              "",
+	Reason:              "",
+}
 
 func main() {
 	// For standalone demo purposes, we will start two services: our PDAL service, and a mocked up JobManager.
 
 	router := httprouter.New()
+
+	type ListFuncs struct {
+		Functions []string `json:"functions"`
+	}
+	out := ListFuncs{[]string{"dart", "dtm", "ground", "height", "info", "translate"}}
+
+	router.GET("/functions/:name", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		var a interface{}
+		switch ps.ByName("name") {
+		case "dart":
+			a = functions.NewDartOptions()
+			w.WriteHeader(http.StatusOK)
+
+		case "dtm":
+			a = functions.NewDtmOptions()
+			w.WriteHeader(http.StatusOK)
+
+		case "ground":
+			a = functions.NewGroundOptions()
+			w.WriteHeader(http.StatusOK)
+
+		case "height":
+			w.WriteHeader(http.StatusOK)
+
+		case "info":
+			a = functions.NewInfoOptions()
+			w.WriteHeader(http.StatusOK)
+
+		case "translate":
+			w.WriteHeader(http.StatusOK)
+
+		default:
+			type DefaultMsg struct {
+				Message string `json:"message"`
+				ListFuncs
+			}
+			msg := "Unrecognized function " + ps.ByName("name") + "."
+			a = DefaultMsg{msg, out}
+			w.WriteHeader(http.StatusBadRequest)
+		}
+		if err := json.NewEncoder(w).Encode(a); err != nil {
+			log.Fatal(err)
+		}
+	})
+
+	router.GET("/functions", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(out); err != nil {
+			log.Fatal(err)
+		}
+	})
 
 	// Setup the PDAL service.
 	router.POST("/pdal", handlers.PdalHandler)
