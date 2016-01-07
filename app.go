@@ -96,12 +96,16 @@ func main() {
 	type ListFuncs struct {
 		Functions []string `json:"functions"`
 	}
-	out := ListFuncs{[]string{"dart", "dtm", "ground", "height", "info", "translate"}}
+	out := ListFuncs{[]string{"crop", "dart", "dtm", "ground", "height", "info", "translate"}}
 
 	router.GET("/functions/:name", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		var a interface{}
 		switch ps.ByName("name") {
+		case "crop":
+			a = functions.NewCropOptions()
+			w.WriteHeader(http.StatusOK)
+
 		case "dart":
 			a = functions.NewDartOptions()
 			w.WriteHeader(http.StatusOK)

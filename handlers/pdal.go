@@ -48,6 +48,9 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	// Make/execute the requested function.
 	switch *msg.Function {
+	case "crop":
+		utils.MakeFunction(functions.Crop)(w, r, &res, msg)
+
 	case "dart":
 		utils.MakeFunction(functions.Dart)(w, r, &res, msg)
 
