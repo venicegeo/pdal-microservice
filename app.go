@@ -96,7 +96,7 @@ func main() {
 	type ListFuncs struct {
 		Functions []string `json:"functions"`
 	}
-	out := ListFuncs{[]string{"crop", "dart", "dtm", "ground", "height", "info", "translate"}}
+	out := ListFuncs{[]string{"crop", "dart", "dtm", "ground", "height", "info", "radius", "translate"}}
 
 	router.GET("/functions/:name", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -123,6 +123,10 @@ func main() {
 
 		case "info":
 			a = functions.NewInfoOptions()
+			w.WriteHeader(http.StatusOK)
+
+		case "radius":
+			a = functions.NewRadiusOptions()
 			w.WriteHeader(http.StatusOK)
 
 		case "translate":

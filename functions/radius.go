@@ -21,26 +21,26 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
+	"strconv"
 
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
-// CropOptions defines options for dart sampling.
-type CropOptions struct {
-	Bounds  string `json:"bounds"`
-	Polygon string `json:"polygon"`
-	Outside bool   `json:"outside"`
+// RadiusOptions defines options for dart sampling.
+type RadiusOptions struct {
+	Neighbors int     `json:"neighbors"`
+	Radius    float64 `json:"radius"`
 }
 
-// NewCropOptions constructs CropOptions with default values.
-func NewCropOptions() *CropOptions {
-	return &CropOptions{Outside: false}
+// NewRadiusOptions constructs RadiusOptions with default values.
+func NewRadiusOptions() *RadiusOptions {
+	return &RadiusOptions{Neighbors: 2, Radius: 1.0}
 }
 
-// Crop implements pdal height.
-func Crop(w http.ResponseWriter, r *http.Request,
+// Radius implements pdal height.
+func Radius(w http.ResponseWriter, r *http.Request,
 	res *job.OutputMsg, msg job.InputMsg, i, o string) {
-	opts := NewCropOptions()
+	opts := NewRadiusOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
 			job.BadRequest(w, r, *res, err.Error())
@@ -49,22 +49,12 @@ func Crop(w http.ResponseWriter, r *http.Request,
 	}
 
 	var args []string
-	args = append(args, "translate", i, o, "crop")
-	args = append(args, "--filters.crop.bounds"+opts.Bounds)
-	args = append(args, "--filters.crop.polygon"+opts.Polygon)
-	if (opts.Bounds == "" && opts.Polygon == "") || (opts.Bounds != "" && opts.Polygon != "") {
-		fmt.Println("must provide bounds OR polygon, but not both")
-	}
-	if opts.Bounds != "" {
-		args = append(args, "--filters.crop.bounds="+opts.Bounds)
-	} else if opts.Polygon != "" {
-		args = append(args, "--filters.crop.polygon="+opts.Polygon)
-	}
-	if opts.Outside {
-		args = append(args, "--filters.crop.outside=true")
-	} else {
-		args = append(args, "--filters.crop.outside=false")
-	}
+	args = append(args, "translate", i, o, "radiusoutlier")
+	args = append(args, "--filters.radiusoutlier.min_neighbors="+strconv.Itoa(opts.Neighbors))
+	args = append(args, "--filters.radiusoutlier.radius="+strconv.FormatFloat(opts.Radius, 'f', -1, 64))
+	// we can make this optional later
+	args = append(args, "--filters.radiusoutlier.extract=true")
+	args = append(args, "--filters.radiusoutlier.classify=false")
 	args = append(args, "-v10", "--debug")
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
