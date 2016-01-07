@@ -1,0 +1,37 @@
+hash: 92aab40892f0829e61614297b350b3f8e8be6d85deb142170e795b0d9081771e
+updated: 2016-01-06T21:24:43.383531036-05:00
+imports:
+- name: github.com/aws/aws-sdk-go
+  version: 82b44aeb2cd44278b0a8f7ee3b72f3cc414a988b
+- name: github.com/davecgh/go-spew
+  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+- name: github.com/go-ini/ini
+  version: afbd495e5aaea13597b5e14fe514ddeaa4d76fc3
+- name: github.com/jmespath/go-jmespath
+  version: c01cf91b011868172fdcd9f41838e80c9d716264
+- name: github.com/julienschmidt/httprouter
+  version: f30ab90cccbd5171771d26b6557d3c2f49e047a6
+- name: github.com/lsegal/gucumber
+  version: e8116c9c66e641e9f81fc0a79fac923dfc646378
+- name: github.com/pmezard/go-difflib
+  version: e8554b8641db39598be7f6342874b958f12ae1d4
+- name: github.com/shiena/ansicolor
+  version: a422bbe96644373c5753384a59d678f7d261ff10
+- name: github.com/stretchr/objx
+  version: 1a9d0bb9f541897e62256577b352fdbc1fb4fd94
+- name: github.com/stretchr/testify
+  version: 5b9da39b66e8e994455c2525c4421c8cc00a7f93
+- name: github.com/venicegeo/pzsvc-sdk-go
+  version: 7952113eb6a448f7e86d3bf88ac53a2dffd5cef2
+  subpackages:
+  - job
+  - utils
+- name: golang.org/x/crypto
+  version: 552e9d568fde9701ea1944fb01c8aadaceaa7353
+- name: golang.org/x/net
+  version: 1d7a0b2100da090d8b02afcfb42f97e2c77e71a4
+- name: golang.org/x/text
+  version: cf4986612c83df6c55578ba198316d1684a9a287
+- name: golang.org/x/tools
+  version: 791f468ced9d96d4ffbc3af50cfe877d253494c1
+devImports: []
