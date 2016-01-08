@@ -59,7 +59,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pzsvc-pdal/functions"
@@ -68,24 +67,24 @@ import (
 )
 
 var pdalMetadata = job.ResourceMetadata{
-	Name:                "pdal",
-	ServiceID:           "",
-	Description:         "Process point cloud data using PDAL.",
-	URL:                 "https://api.piazzageo.io/v1/pdal",
-	Networks:            "TBD",
-	QoS:                 "Development",
-	Availability:        "UP",
-	Tags:                "point cloud, pdal, lidar",
-	ClassType:           "Unclassified",
-	TermDate:            time.Now(),
-	ClientCertRequired:  false,
-	CredentialsRequired: false,
-	PreAuthRequired:     false,
-	Contracts:           "",
-	Method:              "",
-	MimeType:            "",
-	Params:              "",
-	Reason:              "",
+	Name:         "pdal",
+	ServiceID:    "",
+	Description:  "Process point cloud data using PDAL.",
+	URL:          "https://api.piazzageo.io/v1/pdal",
+	Networks:     "TBD",
+	QoS:          "Development",
+	Availability: "UP",
+	Tags:         "point cloud, pdal, lidar",
+	ClassType:    "Unclassified",
+	// TermDate:            time.Now(),
+	// ClientCertRequired:  false,
+	// CredentialsRequired: false,
+	// PreAuthRequired:     false,
+	// Contracts:           "",
+	// Method:              "",
+	// MimeType:            "",
+	// Params:              "",
+	// Reason:              "",
 }
 
 func main() {
