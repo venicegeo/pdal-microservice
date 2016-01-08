@@ -69,6 +69,9 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	case "radius":
 		utils.MakeFunction(functions.Radius)(w, r, &res, msg)
 
+	case "statistical":
+		utils.MakeFunction(functions.Statistical)(w, r, &res, msg)
+
 	case "translate":
 		utils.MakeFunction(functions.Translate)(w, r, &res, msg)
 
