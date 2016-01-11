@@ -26,9 +26,9 @@ import (
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
-// DtmOptions defines options for the DTM generation resource.
+// DtmOptions defines options for the Dtm function.
 type DtmOptions struct {
-	GridSize float64 `json:"grid_size"`
+	GridSize float64 `json:"grid_size"` // size of grid cell in XY dimensions
 }
 
 // NewDtmOptions constructs DtmOptions with default values.

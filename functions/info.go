@@ -27,11 +27,11 @@ import (
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
-// InfoOptions defines options for Info.
+// InfoOptions defines options for the Info function.
 type InfoOptions struct {
-	Boundary bool `json:"boundary"`
-	Metadata bool `json:"metadata"`
-	Schema   bool `json:"schema"`
+	Boundary bool `json:"boundary"` // compute hexagonal boundary that contains all points
+	Metadata bool `json:"metadata"` // dump metadata associated with the input file
+	Schema   bool `json:"schema"`   // dump the schema of the internal point storage
 }
 
 // NewInfoOptions constructs InfoOptions with default values.

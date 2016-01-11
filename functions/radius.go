@@ -26,9 +26,9 @@ import (
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
-// RadiusOptions defines options for dart sampling.
+// RadiusOptions defines options for the Radius function.
 type RadiusOptions struct {
-	Neighbors int     `json:"neighbors"`
+	Neighbors int     `json:"neighbors"` // minimum number of neighbors in radius
 	Radius    float64 `json:"radius"`
 }
 

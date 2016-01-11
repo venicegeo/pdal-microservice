@@ -25,7 +25,7 @@ import (
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
-// CropOptions defines options for dart sampling.
+// CropOptions defines options for the Crop function.
 type CropOptions struct {
 	Bounds  string `json:"bounds"`  // extents of the clipping rectangle in the form "([xmin,xmax],[ymin,ymax])"
 	Polygon string `json:"polygon"` // the clipping polygon in well-known text, e.g., POLYGON((30 10, 40 40, 20 40, 10 20, 30 10))

@@ -26,10 +26,10 @@ import (
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
-// StatisticalOptions defines options for dart sampling.
+// StatisticalOptions defines options for the Statical function.
 type StatisticalOptions struct {
-	Neighbors int     `json:"neighbors"`
-	Thresh    float64 `json:"thresh"`
+	Neighbors int     `json:"neighbors"` // mean number of neighbors to compute mean and standard deviation
+	Thresh    float64 `json:"thresh"`    // standard deviation multiplier for thresholding outliers
 }
 
 // NewStatisticalOptions constructs StatisticalOptions with default values.

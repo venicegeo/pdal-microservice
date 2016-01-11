@@ -26,7 +26,7 @@ import (
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
-// GroundOptions defines options for Ground segmentation.
+// GroundOptions defines options for the Ground function.
 type GroundOptions struct {
 	CellSize        float64 `json:"cell_size"`
 	InitialDistance float64 `json:"initial_distance"`

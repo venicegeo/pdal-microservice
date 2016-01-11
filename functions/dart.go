@@ -26,11 +26,9 @@ import (
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
-// DartOptions defines options for dart sampling.
+// DartOptions defines options for the Dart function.
 type DartOptions struct {
-	// Radius is minimum distance criteria. No two points in the sampled point
-	// cloud will be closer than the specified radius.
-	Radius float64 `json:"radius"`
+	Radius float64 `json:"radius"` // minimum distance between samples
 }
 
 // NewDartOptions constructs DartOptions with default values.

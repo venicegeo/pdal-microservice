@@ -26,7 +26,17 @@ import (
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
-// TranslateOptions defines options for Ground segmentation.
+/*
+TranslateOptions defines options for the Translate function.
+
+Assume the following command:
+
+	$ pdal translate <input> <output> [args]
+
+The Translate function takes a single option "args" - a string that completes the command-line invocation of the PDAL CLI.
+
+See [here](http://www.pdal.io/apps.html#translate-command) for more on the PDAL translate command.
+*/
 type TranslateOptions struct {
 	Args string `json:"args"`
 }
