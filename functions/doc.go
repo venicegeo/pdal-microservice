@@ -55,17 +55,17 @@ Example JSON "options" object for the Dart function.
     "radius": 1.0
   }
 
-Example JSON "options" object for the Dtm function.
-
 Dtm
+
+Example JSON "options" object for the Dtm function.
 
   {
     "grid_size": 1.0
   }
 
-Example JSON "options" object for the Ground function.
-
 Ground
+
+Example JSON "options" object for the Ground function.
 
   {
     "cell_size": 1.0,
