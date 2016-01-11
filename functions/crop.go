@@ -37,7 +37,13 @@ func NewCropOptions() *CropOptions {
 	return &CropOptions{Outside: false}
 }
 
-// Crop implements pdal height.
+/*
+Crop calls PDAL translate with a crop filter.
+
+The Crop function will invoke the PDAL translate command as follows:
+
+	$ pdal translate <input> <output> crop [--filters.crop.bounds=<bounds string>] [--filters.crop.polygon=<polygon string>] [--filters.crop.outside=<true|false>] -v10 --debug
+*/
 func Crop(w http.ResponseWriter, r *http.Request,
 	res *job.OutputMsg, msg job.InputMsg, i, o string) {
 	opts := NewCropOptions()
@@ -50,8 +56,8 @@ func Crop(w http.ResponseWriter, r *http.Request,
 
 	var args []string
 	args = append(args, "translate", i, o, "crop")
-	args = append(args, "--filters.crop.bounds"+opts.Bounds)
-	args = append(args, "--filters.crop.polygon"+opts.Polygon)
+	// args = append(args, "--filters.crop.bounds"+opts.Bounds)
+	// args = append(args, "--filters.crop.polygon"+opts.Polygon)
 	if (opts.Bounds == "" && opts.Polygon == "") || (opts.Bounds != "" && opts.Polygon != "") {
 		fmt.Println("must provide bounds OR polygon, but not both")
 	}
