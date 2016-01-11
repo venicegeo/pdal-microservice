@@ -17,6 +17,26 @@ limitations under the License.
 /*
 Package functions provides support for various functions within the PDAL microservice.
 
+Remembering that the PDAL handler expects inputs in the form
+
+	{
+		"source": {
+			"bucket": <source S3 bucket>,
+			"key": <source S3 key>"
+		},
+		"function": <function name>,
+		"options": {
+			<function key>: <function value>,
+      ...
+		},
+		"destination": {
+			"bucket": <destination S3 bucket>,
+			"key" <destination S3 key>
+		}
+	}
+
+the following sections provide brief examples of valid options for each function. The values provided below do not represent default values.
+
 Crop
 
 Example JSON "options" object for the Crop function.
@@ -29,15 +49,21 @@ Example JSON "options" object for the Crop function.
 
 Dart
 
+Example JSON "options" object for the Dart function.
+
   {
     "radius": 1.0
   }
+
+Example JSON "options" object for the Dtm function.
 
 Dtm
 
   {
     "grid_size": 1.0
   }
+
+Example JSON "options" object for the Ground function.
 
 Ground
 
@@ -51,7 +77,11 @@ Ground
 
 Height
 
+The Height function currently takes no options.
+
 Info
+
+Example JSON "options" object for the Info function.
 
   {
     "boundary": false,
@@ -61,6 +91,8 @@ Info
 
 Radius
 
+Example JSON "options" object for the Radius function.
+
   {
     "neighbors": 2,
     "radius": 1.0
@@ -68,12 +100,16 @@ Radius
 
 Statistical
 
+Example JSON "options" object for the Statistical function.
+
   {
     "neighbors": 8,
     "thresh": 1.5
   }
 
 Translate
+
+Example JSON "options" object for the Translate function.
 
   {
     "args": "radiusoutlier ground --filters.radiusoutlier.radius=2.0 --filters.ground.classify=true"
