@@ -16,5 +16,73 @@ limitations under the License.
 
 /*
 Package functions provides support for various functions within the PDAL microservice.
+
+Crop
+
+  {
+    "bounds": "([xmin,xmax],[ymin,ymax])",
+    "polygon": "POLYGON((30 10, 40 40, 20 40, 10 20, 30 10))",
+    "outside": false
+  }
+
+bounds:
+  string
+polygon:
+  string
+outside:
+  boolean(false)
+
+Dart
+
+  {
+    "radius": 1.0
+  }
+
+Dtm
+
+  {
+    "grid_size": 1.0
+  }
+
+Ground
+
+  {
+    "cell_size": 1.0,
+    "initial_distance": 0.15,
+    "max_distance": 2.5,
+    "max_window_size": 33.0,
+    "slope": 1.0
+  }
+
+Height
+
+Info
+
+  {
+    "boundary": false,
+    "metadata": true,
+    "schema": false
+  }
+
+Radius
+
+  {
+    "neighbors": 2,
+    "radius": 1.0
+  }
+
+Statistical
+
+  {
+    "neighbors": 8,
+    "thresh": 1.5
+  }
+
+Translate
+
+  {
+    "args": "radiusoutlier ground --filters.radiusoutlier.radius=2.0 --filters.ground.classify=true"
+  }
+
 */
 package functions

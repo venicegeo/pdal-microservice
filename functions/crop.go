@@ -27,9 +27,9 @@ import (
 
 // CropOptions defines options for dart sampling.
 type CropOptions struct {
-	Bounds  string `json:"bounds"`
-	Polygon string `json:"polygon"`
-	Outside bool   `json:"outside"`
+	Bounds  string `json:"bounds"`  // bounds in the form ([xmin,xmax],[ymin,ymax])
+	Polygon string `json:"polygon"` // WKT polygon, e.g., POLYGON((30 10, 40 40, 20 40, 10 20, 30 10))
+	Outside bool   `json:"outside"` // crop outside points? (default: false)
 }
 
 // NewCropOptions constructs CropOptions with default values.
