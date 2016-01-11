@@ -19,18 +19,13 @@ Package functions provides support for various functions within the PDAL microse
 
 Crop
 
+Example JSON "options" object for the Crop function.
+
   {
     "bounds": "([xmin,xmax],[ymin,ymax])",
     "polygon": "POLYGON((30 10, 40 40, 20 40, 10 20, 30 10))",
     "outside": false
   }
-
-bounds:
-  string
-polygon:
-  string
-outside:
-  boolean(false)
 
 Dart
 
