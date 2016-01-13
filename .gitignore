@@ -2,4 +2,3 @@ coverage.out
 pdal
 handlers/*.laz
 handlers/bad-file
-vendor/
