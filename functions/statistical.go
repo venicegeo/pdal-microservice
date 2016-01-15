@@ -58,8 +58,8 @@ func Statistical(w http.ResponseWriter, r *http.Request,
 	args = append(args, "-v10", "--debug")
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
+	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(string(out))
 		fmt.Println(err.Error())
 	}
 }

@@ -42,7 +42,11 @@ Crop calls PDAL translate with a crop filter.
 
 The Crop function will invoke the PDAL translate command as follows:
 
-	$ pdal translate <input> <output> crop [--filters.crop.bounds=<bounds string>] [--filters.crop.polygon=<polygon string>] [--filters.crop.outside=<true|false>] -v10 --debug
+	$ pdal translate <input> <output> crop \
+	  [--filters.crop.bounds=<bounds string>] \
+	  [--filters.crop.polygon=<polygon string>] \
+	  [--filters.crop.outside=<true|false>] \
+	  -v10 --debug
 */
 func Crop(w http.ResponseWriter, r *http.Request,
 	res *job.OutputMsg, msg job.InputMsg, i, o string) {
@@ -74,8 +78,8 @@ func Crop(w http.ResponseWriter, r *http.Request,
 	args = append(args, "-v10", "--debug")
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
+	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(string(out))
 		fmt.Println(err.Error())
 	}
 }
