@@ -57,8 +57,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pzsvc-pdal/functions"
@@ -91,6 +93,10 @@ func main() {
 	// For standalone demo purposes, we will start two services: our PDAL service, and a mocked up JobManager.
 
 	router := httprouter.New()
+
+	router.GET("/", func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+		fmt.Fprintf(w, "Hi!")
+	})
 
 	type ListFuncs struct {
 		Functions []string `json:"functions"`
@@ -161,10 +167,17 @@ func main() {
 	router.POST("/pdal", handlers.PdalHandler)
 
 	// Setup the mocked up JobManager.
-	router.POST("/manager", handlers.JobManagerHandler)
+	// router.POST("/manager", handlers.JobManagerHandler)
 
-	log.Println("Starting on 8080")
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	var defaultPort = os.Getenv("PORT")
+	if defaultPort == "" {
+		defaultPort = "8080"
+	}
+
+	log.Println("Starting on port ", defaultPort)
+	log.Println(os.Getenv("PATH"))
+	log.Println(os.Getenv("LD_LIBRARY_PATH"))
+	if err := http.ListenAndServe(":"+defaultPort, router); err != nil {
 		log.Fatal(err)
 	}
 }

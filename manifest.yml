@@ -1,0 +1,10 @@
+applications:
+- name: pzsvc-pdal
+  host: pzsvc-pdal
+  memory: 1G
+  instances: 1
+  timeout: 80
+  command: ./pzsvc-pdal
+  buildpack: https://github.com/venicegeo/go-pdal-buildpack
+  env:
+    GO15VENDOREXPERIMENT: "1"
