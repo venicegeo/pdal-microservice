@@ -23,7 +23,7 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/venicegeo/pzsvc-sdk-go/job"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // RadiusOptions defines options for the Radius function.

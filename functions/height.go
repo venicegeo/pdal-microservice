@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"os/exec"
 
-	"github.com/venicegeo/pzsvc-sdk-go/job"
+	"github.com/venicegeo/pzsvc-pdal/Godeps/_workspace/src/github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // Height implements pdal height.
