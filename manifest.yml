@@ -7,4 +7,4 @@ applications:
   command: ./pzsvc-pdal
   buildpack: https://github.com/venicegeo/go-pdal-buildpack
   env:
-    GO15VENDOREXPERIMENT: "0"
+    GO15VENDOREXPERIMENT: "1"
