@@ -64,6 +64,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pzsvc-pdal/functions"
+	"github.com/venicegeo/pzsvc-pdal/handlers"
 )
 
 // var pdalMetadata = job.ResourceMetadata{
@@ -162,7 +163,7 @@ func main() {
 	})
 
 	// // Setup the PDAL service.
-	// router.POST("/pdal", handlers.PdalHandler)
+	router.POST("/pdal", handlers.PdalHandler)
 
 	// Setup the mocked up JobManager.
 	// router.POST("/manager", handlers.JobManagerHandler)
