@@ -18,13 +18,76 @@ package handlers
 
 import (
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pzsvc-pdal/functions"
 	"github.com/venicegeo/pzsvc-sdk-go/job"
+	"github.com/venicegeo/pzsvc-sdk-go/s3"
 	"github.com/venicegeo/pzsvc-sdk-go/utils"
 )
+
+// MakeFunction wraps the individual PDAL functions.
+// Parse the input and output filenames, creating files as needed. Download the
+// input data and upload the output data.
+func makeFunction2(fn func(http.ResponseWriter, *http.Request,
+	*job.OutputMsg, job.InputMsg, string, string)) utils.FunctionFunc {
+	return func(w http.ResponseWriter, r *http.Request, res *job.OutputMsg,
+		msg job.InputMsg) {
+		var inputName, outputName string
+		var fileIn, fileOut *os.File
+
+		// Split the source S3 key string, interpreting the last element as the
+		// input filename. Create the input file, throwing 500 on error.
+		inputName = s3.ParseFilenameFromKey(msg.Source.Key)
+		fileIn, err := os.Create(inputName)
+		if err != nil {
+			job.InternalError(w, r, *res, err.Error())
+			return
+		}
+		defer fileIn.Close()
+
+		// If provided, split the destination S3 key string, interpreting the last
+		// element as the output filename. Create the output file, throwing 500 on
+		// error.
+		if len(msg.Destination.Key) > 0 {
+			outputName = s3.ParseFilenameFromKey(msg.Destination.Key)
+			// fileOut, err = os.Create(outputName)
+			// if err != nil {
+			// 	job.InternalError(w, r, *res, err.Error())
+			// 	return
+			// }
+			// defer fileOut.Close()
+		}
+
+		// Download the source data from S3, throwing 500 on error.
+		err = s3.Download(fileIn, msg.Source.Bucket, msg.Source.Key)
+		if err != nil {
+			job.InternalError(w, r, *res, err.Error())
+			return
+		}
+
+		// Run the PDAL function.
+		fn(w, r, res, msg, inputName, outputName)
+
+		// If an output has been created, upload the destination data to S3,
+		// throwing 500 on error.
+		if len(msg.Destination.Key) > 0 {
+			fileOut, err = os.Open(outputName)
+			if err != nil {
+				job.InternalError(w, r, *res, err.Error())
+				return
+			}
+			defer fileOut.Close()
+			err = s3.Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
+			if err != nil {
+				job.InternalError(w, r, *res, err.Error())
+				return
+			}
+		}
+	}
+}
 
 // PdalHandler handles PDAL jobs.
 func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -74,6 +137,9 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	case "translate":
 		utils.MakeFunction(functions.Translate)(w, r, &res, msg)
+
+	case "vo":
+		makeFunction2(functions.VO)(w, r, &res, msg)
 
 	// An unrecognized function will result in 400 error, with message explaining
 	// how to list available functions.
