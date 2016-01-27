@@ -43,7 +43,7 @@ func makeFunction2(fn func(http.ResponseWriter, *http.Request,
 		inputName = s3.ParseFilenameFromKey(msg.Source.Key)
 		fileIn, err := os.Create(inputName)
 		if err != nil {
-			job.InternalError(w, r, *res, err.Error())
+			// job.InternalError(w, r, *res, err.Error())
 			return
 		}
 		defer fileIn.Close()
@@ -64,7 +64,7 @@ func makeFunction2(fn func(http.ResponseWriter, *http.Request,
 		// Download the source data from S3, throwing 500 on error.
 		err = s3.Download(fileIn, msg.Source.Bucket, msg.Source.Key)
 		if err != nil {
-			job.InternalError(w, r, *res, err.Error())
+			// job.InternalError(w, r, *res, err.Error())
 			return
 		}
 
@@ -76,13 +76,13 @@ func makeFunction2(fn func(http.ResponseWriter, *http.Request,
 		if len(msg.Destination.Key) > 0 {
 			fileOut, err = os.Open(outputName)
 			if err != nil {
-				job.InternalError(w, r, *res, err.Error())
+				// job.InternalError(w, r, *res, err.Error())
 				return
 			}
 			defer fileOut.Close()
 			err = s3.Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
 			if err != nil {
-				job.InternalError(w, r, *res, err.Error())
+				// job.InternalError(w, r, *res, err.Error())
 				return
 			}
 		}
