@@ -38,16 +38,16 @@ type FunctionFunc func(
 	job.InputMsg,
 )
 
-func statFile(fname string) {
-	log.Printf("Stat %s\n", fname)
-	info, _ := os.Stat(fname)
-	log.Println(info)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	log.Println("Run!")
-}
+// func statFile(fname string) {
+// 	log.Printf("Stat %s\n", fname)
+// 	info, _ := os.Stat(fname)
+// 	log.Println(info)
+// 	// if err != nil {
+// 	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+// 	// 	return
+// 	// }
+// 	log.Println("Run!")
+// }
 
 // MakeFunction wraps the individual PDAL functions.
 // Parse the input and output filenames, creating files as needed. Download the
@@ -97,7 +97,8 @@ func MakeFunction(
 			return
 		}
 
-		statFile(outputName)
+		// statFile(outputName)
+		os.Remove(outputName)
 
 		// Run the PDAL function.
 		fn(w, r, res, msg, inputName, outputName)
