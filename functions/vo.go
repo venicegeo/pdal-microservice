@@ -18,6 +18,7 @@ package functions
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os/exec"
 
@@ -32,6 +33,8 @@ func VO(
 	msg job.InputMsg,
 	i, o string,
 ) {
+	log.Println(i)
+	log.Println(o)
 	out, err := exec.Command("pdal", "vo", i, o, "-v10",
 		"--debug").CombinedOutput()
 
