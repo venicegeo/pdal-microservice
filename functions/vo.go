@@ -17,9 +17,13 @@ limitations under the License.
 package functions
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 
 	"github.com/venicegeo/pzsvc-sdk-go/job"
@@ -40,6 +44,31 @@ func VO(
 
 	fmt.Println(string(out))
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fileOut, err := os.Open(o)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer fileOut.Close()
+
+	src, err := ioutil.ReadAll(fileOut)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Trim whitespace
+	buffer := new(bytes.Buffer)
+	if err := json.Compact(buffer, src); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
