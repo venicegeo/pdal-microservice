@@ -30,16 +30,32 @@ import (
 )
 
 // FunctionFunc defines the signature of our function creator.
-type FunctionFunc func(http.ResponseWriter, *http.Request,
-	*job.OutputMsg, job.InputMsg)
+type FunctionFunc func(
+	http.ResponseWriter,
+	*http.Request,
+	*job.OutputMsg,
+	job.InputMsg,
+)
 
 // MakeFunction wraps the individual PDAL functions.
 // Parse the input and output filenames, creating files as needed. Download the
 // input data and upload the output data.
-func MakeFunction(fn func(http.ResponseWriter, *http.Request,
-	*job.OutputMsg, job.InputMsg, string, string)) FunctionFunc {
-	return func(w http.ResponseWriter, r *http.Request, res *job.OutputMsg,
-		msg job.InputMsg) {
+func MakeFunction(
+	fn func(
+		http.ResponseWriter,
+		*http.Request,
+		*job.OutputMsg,
+		job.InputMsg,
+		string,
+		string,
+	),
+) FunctionFunc {
+	return func(
+		w http.ResponseWriter,
+		r *http.Request,
+		res *job.OutputMsg,
+		msg job.InputMsg,
+	) {
 		var inputName, outputName string
 		var fileIn, fileOut *os.File
 
@@ -48,7 +64,7 @@ func MakeFunction(fn func(http.ResponseWriter, *http.Request,
 		inputName = s3.ParseFilenameFromKey(msg.Source.Key)
 		fileIn, err := os.Create(inputName)
 		if err != nil {
-			job.InternalError(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		defer fileIn.Close()
@@ -58,18 +74,12 @@ func MakeFunction(fn func(http.ResponseWriter, *http.Request,
 		// error.
 		if len(msg.Destination.Key) > 0 {
 			outputName = s3.ParseFilenameFromKey(msg.Destination.Key)
-			// fileOut, err = os.Create(outputName)
-			// if err != nil {
-			// 	job.InternalError(w, r, *res, err.Error())
-			// 	return
-			// }
-			// defer fileOut.Close()
 		}
 
 		// Download the source data from S3, throwing 500 on error.
 		err = s3.Download(fileIn, msg.Source.Bucket, msg.Source.Key)
 		if err != nil {
-			job.InternalError(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -79,9 +89,15 @@ func MakeFunction(fn func(http.ResponseWriter, *http.Request,
 		// If an output has been created, upload the destination data to S3,
 		// throwing 500 on error.
 		if len(msg.Destination.Key) > 0 {
+			fileOut, err = os.Open(outputName)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			defer fileOut.Close()
 			err = s3.Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
 			if err != nil {
-				job.InternalError(w, r, *res, err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}
