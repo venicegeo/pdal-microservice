@@ -57,6 +57,8 @@ func MakeFunction(
 		res *job.OutputMsg,
 		msg job.InputMsg,
 	) {
+		log.Println("Here we are in MakeFunction")
+
 		var inputName, outputName string
 		var fileIn, fileOut *os.File
 
