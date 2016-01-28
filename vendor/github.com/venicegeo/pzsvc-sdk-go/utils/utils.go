@@ -22,7 +22,7 @@ Provide functions to return canned responses: StatusOK, StatusBadRequest, and St
 package utils
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -85,7 +85,7 @@ func MakeFunction(
 		}
 
 		info, _ := os.Stat(outputName)
-		fmt.Println(info)
+		log.Println(info)
 		// if err != nil {
 		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
 		// 	return
