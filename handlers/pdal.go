@@ -139,7 +139,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		utils.MakeFunction(functions.Translate)(w, r, &res, msg)
 
 	case "vo":
-		makeFunction2(functions.VO)(w, r, &res, msg)
+		utils.MakeFunction(functions.VO)(w, r, &res, msg)
 
 	// An unrecognized function will result in 400 error, with message explaining
 	// how to list available functions.
