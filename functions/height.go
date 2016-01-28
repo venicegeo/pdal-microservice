@@ -25,14 +25,20 @@ import (
 )
 
 // Height implements pdal height.
-func Height(w http.ResponseWriter, r *http.Request,
-	res *job.OutputMsg, msg job.InputMsg, i, o string) {
+func Height(
+	w http.ResponseWriter,
+	r *http.Request,
+	res *job.OutputMsg,
+	msg job.InputMsg,
+	i, o string,
+) {
 	out, err := exec.Command("pdal", "translate", i, o,
 		"ground", "height", "ferry",
 		"--filters.ferry.dimensions=Height=Z", "-v10", "--debug").CombinedOutput()
 
+	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(string(out))
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

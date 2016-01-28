@@ -19,8 +19,6 @@ package functions
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"os/exec"
 
@@ -29,9 +27,12 @@ import (
 
 // InfoOptions defines options for the Info function.
 type InfoOptions struct {
-	Boundary bool `json:"boundary"` // compute hexagonal boundary that contains all points
-	Metadata bool `json:"metadata"` // dump metadata associated with the input file
-	Schema   bool `json:"schema"`   // dump the schema of the internal point storage
+	// compute hexagonal boundary that contains all points
+	Boundary bool `json:"boundary"`
+	// dump metadata associated with the input file
+	Metadata bool `json:"metadata"`
+	// dump the schema of the internal point storage
+	Schema bool `json:"schema"`
 }
 
 // NewInfoOptions constructs InfoOptions with default values.
@@ -44,12 +45,17 @@ func NewInfoOptions() *InfoOptions {
 }
 
 // Info implements pdal info.
-func Info(w http.ResponseWriter, r *http.Request,
-	res *job.OutputMsg, msg job.InputMsg, i, o string) {
+func Info(
+	w http.ResponseWriter,
+	r *http.Request,
+	res *job.OutputMsg,
+	msg job.InputMsg,
+	i, o string,
+) {
 	opts := NewInfoOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			job.BadRequest(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -72,10 +78,12 @@ func Info(w http.ResponseWriter, r *http.Request,
 	// Trim whitespace
 	buffer := new(bytes.Buffer)
 	if err := json.Compact(buffer, out); err != nil {
-		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if err := json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

@@ -25,13 +25,19 @@ import (
 )
 
 // VO implements pdal vo.
-func VO(w http.ResponseWriter, r *http.Request,
-	res *job.OutputMsg, msg job.InputMsg, i, o string) {
-	out, err := exec.Command("pdal", "vo", i, o,
-		"-v10", "--debug").CombinedOutput()
+func VO(
+	w http.ResponseWriter,
+	r *http.Request,
+	res *job.OutputMsg,
+	msg job.InputMsg,
+	i, o string,
+) {
+	out, err := exec.Command("pdal", "vo", i, o, "-v10",
+		"--debug").CombinedOutput()
 
+	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(string(out))
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

@@ -28,8 +28,10 @@ import (
 
 // StatisticalOptions defines options for the Statical function.
 type StatisticalOptions struct {
-	Neighbors int     `json:"neighbors"` // mean number of neighbors to compute mean and standard deviation
-	Thresh    float64 `json:"thresh"`    // standard deviation multiplier for thresholding outliers
+	// mean number of neighbors to compute mean and standard deviation
+	Neighbors int `json:"neighbors"`
+	// standard deviation multiplier for thresholding outliers
+	Thresh float64 `json:"thresh"`
 }
 
 // NewStatisticalOptions constructs StatisticalOptions with default values.
@@ -38,20 +40,27 @@ func NewStatisticalOptions() *StatisticalOptions {
 }
 
 // Statistical implements pdal height.
-func Statistical(w http.ResponseWriter, r *http.Request,
-	res *job.OutputMsg, msg job.InputMsg, i, o string) {
+func Statistical(
+	w http.ResponseWriter,
+	r *http.Request,
+	res *job.OutputMsg,
+	msg job.InputMsg,
+	i, o string,
+) {
 	opts := NewStatisticalOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			job.BadRequest(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
 
 	var args []string
 	args = append(args, "translate", i, o, "statisticaloutlier")
-	args = append(args, "--filters.statisticaloutlier.k-neighbors="+strconv.Itoa(opts.Neighbors))
-	args = append(args, "--filters.statisticaloutlier.thresh="+strconv.FormatFloat(opts.Thresh, 'f', -1, 64))
+	args = append(args, "--filters.statisticaloutlier.k-neighbors="+
+		strconv.Itoa(opts.Neighbors))
+	args = append(args, "--filters.statisticaloutlier.thresh="+
+		strconv.FormatFloat(opts.Thresh, 'f', -1, 64))
 	// we can make this optional later
 	args = append(args, "--filters.statisticaloutlier.extract=true")
 	args = append(args, "--filters.statisticaloutlier.classify=false")
@@ -60,6 +69,7 @@ func Statistical(w http.ResponseWriter, r *http.Request,
 
 	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

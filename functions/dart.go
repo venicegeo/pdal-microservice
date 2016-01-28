@@ -37,25 +37,31 @@ func NewDartOptions() *DartOptions {
 }
 
 // Dart implements pdal height.
-func Dart(w http.ResponseWriter, r *http.Request,
-	res *job.OutputMsg, msg job.InputMsg, i, o string) {
+func Dart(
+	w http.ResponseWriter,
+	r *http.Request,
+	res *job.OutputMsg,
+	msg job.InputMsg,
+	i, o string,
+) {
 	opts := NewDartOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			job.BadRequest(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
 
 	var args []string
 	args = append(args, "translate", i, o, "dartsample")
-	args = append(args,
-		"--filters.dartsample.radius="+strconv.FormatFloat(opts.Radius, 'f', -1, 64))
+	args = append(args, "--filters.dartsample.radius="+
+		strconv.FormatFloat(opts.Radius, 'f', -1, 64))
 	args = append(args, "-v10", "--debug")
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
+	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(string(out))
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

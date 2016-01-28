@@ -47,12 +47,17 @@ func NewTranslateOptions() *TranslateOptions {
 }
 
 // Translate implements pdal translate.
-func Translate(w http.ResponseWriter, r *http.Request,
-	res *job.OutputMsg, msg job.InputMsg, i, o string) {
+func Translate(
+	w http.ResponseWriter,
+	r *http.Request,
+	res *job.OutputMsg,
+	msg job.InputMsg,
+	i, o string,
+) {
 	opts := NewTranslateOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			job.BadRequest(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -68,8 +73,9 @@ func Translate(w http.ResponseWriter, r *http.Request,
 
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
+	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(string(out))
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

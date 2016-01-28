@@ -47,12 +47,17 @@ func NewGroundOptions() *GroundOptions {
 }
 
 // Ground implements pdal ground.
-func Ground(w http.ResponseWriter, r *http.Request,
-	res *job.OutputMsg, msg job.InputMsg, i, o string) {
+func Ground(
+	w http.ResponseWriter,
+	r *http.Request,
+	res *job.OutputMsg,
+	msg job.InputMsg,
+	i, o string,
+) {
 	opts := NewGroundOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			job.BadRequest(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -64,22 +69,23 @@ func Ground(w http.ResponseWriter, r *http.Request,
 	args = append(args, "ground")
 	args = append(args, "--filters.ground.extract=true")
 	args = append(args, "--filters.ground.classify=false")
-	args = append(args,
-		"--filters.ground.cell_size="+strconv.FormatFloat(opts.CellSize, 'f', -1, 64))
-	args = append(args,
-		"--filters.ground.initial_distance="+strconv.FormatFloat(opts.InitialDistance, 'f', -1, 64))
-	args = append(args,
-		"--filters.ground.max_distance="+strconv.FormatFloat(opts.MaxDistance, 'f', -1, 64))
-	args = append(args,
-		"--filters.ground.max_window_size="+strconv.FormatFloat(opts.MaxWindowSize, 'f', -1, 64))
-	args = append(args,
-		"--filters.ground.slope="+strconv.FormatFloat(opts.Slope, 'f', -1, 64))
+	args = append(args, "--filters.ground.cell_size="+
+		strconv.FormatFloat(opts.CellSize, 'f', -1, 64))
+	args = append(args, "--filters.ground.initial_distance="+
+		strconv.FormatFloat(opts.InitialDistance, 'f', -1, 64))
+	args = append(args, "--filters.ground.max_distance="+
+		strconv.FormatFloat(opts.MaxDistance, 'f', -1, 64))
+	args = append(args, "--filters.ground.max_window_size="+
+		strconv.FormatFloat(opts.MaxWindowSize, 'f', -1, 64))
+	args = append(args, "--filters.ground.slope="+
+		strconv.FormatFloat(opts.Slope, 'f', -1, 64))
 	args = append(args, "-v10", "--debug")
 
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
+	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(string(out))
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

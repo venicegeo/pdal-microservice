@@ -37,12 +37,17 @@ func NewDtmOptions() *DtmOptions {
 }
 
 // Dtm implements pdal dtm.
-func Dtm(w http.ResponseWriter, r *http.Request,
-	res *job.OutputMsg, msg job.InputMsg, i, o string) {
+func Dtm(
+	w http.ResponseWriter,
+	r *http.Request,
+	res *job.OutputMsg,
+	msg job.InputMsg,
+	i, o string,
+) {
 	opts := NewDtmOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			job.BadRequest(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -57,16 +62,17 @@ func Dtm(w http.ResponseWriter, r *http.Request,
 	args = append(args, "-w", "writers.p2g")
 	args = append(args, "--writers.p2g.output_type=min")
 	args = append(args, "--writers.p2g.output_format=tif")
-	args = append(args,
-		"--writers.p2g.grid_dist_x="+strconv.FormatFloat(opts.GridSize, 'f', -1, 64))
-	args = append(args,
-		"--writers.p2g.grid_dist_y="+strconv.FormatFloat(opts.GridSize, 'f', -1, 64))
+	args = append(args, "--writers.p2g.grid_dist_x="+
+		strconv.FormatFloat(opts.GridSize, 'f', -1, 64))
+	args = append(args, "--writers.p2g.grid_dist_y="+
+		strconv.FormatFloat(opts.GridSize, 'f', -1, 64))
 	args = append(args, "-v10", "--debug")
 
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
+	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(string(out))
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

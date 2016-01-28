@@ -27,9 +27,14 @@ import (
 
 // CropOptions defines options for the Crop function.
 type CropOptions struct {
-	Bounds  string `json:"bounds"`  // extents of the clipping rectangle in the form "([xmin,xmax],[ymin,ymax])"
-	Polygon string `json:"polygon"` // the clipping polygon in well-known text, e.g., POLYGON((30 10, 40 40, 20 40, 10 20, 30 10))
-	Outside bool   `json:"outside"` // invert logic and only keep points outside the bounds/polygon (default: false)
+	// extents of the clipping rectangle in the form "([xmin,xmax],[ymin,ymax])"
+	Bounds string `json:"bounds"`
+	// the clipping polygon in well-known text, e.g.,
+	// POLYGON((30 10, 40 40, 20 40, 10 20, 30 10))
+	Polygon string `json:"polygon"`
+	// invert logic and only keep points outside the bounds/polygon
+	// (default: false)
+	Outside bool `json:"outside"`
 }
 
 // NewCropOptions constructs CropOptions with default values.
@@ -48,21 +53,25 @@ The Crop function will invoke the PDAL translate command as follows:
 	  [--filters.crop.outside=<true|false>] \
 	  -v10 --debug
 */
-func Crop(w http.ResponseWriter, r *http.Request,
-	res *job.OutputMsg, msg job.InputMsg, i, o string) {
+func Crop(
+	w http.ResponseWriter,
+	r *http.Request,
+	res *job.OutputMsg,
+	msg job.InputMsg,
+	i, o string,
+) {
 	opts := NewCropOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			job.BadRequest(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
 
 	var args []string
 	args = append(args, "translate", i, o, "crop")
-	// args = append(args, "--filters.crop.bounds"+opts.Bounds)
-	// args = append(args, "--filters.crop.polygon"+opts.Polygon)
-	if (opts.Bounds == "" && opts.Polygon == "") || (opts.Bounds != "" && opts.Polygon != "") {
+	if (opts.Bounds == "" && opts.Polygon == "") ||
+		(opts.Bounds != "" && opts.Polygon != "") {
 		fmt.Println("must provide bounds OR polygon, but not both")
 	}
 	if opts.Bounds != "" {
@@ -80,6 +89,7 @@ func Crop(w http.ResponseWriter, r *http.Request,
 
 	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

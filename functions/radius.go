@@ -28,7 +28,8 @@ import (
 
 // RadiusOptions defines options for the Radius function.
 type RadiusOptions struct {
-	Neighbors int     `json:"neighbors"` // minimum number of neighbors in radius
+	// minimum number of neighbors in radius
+	Neighbors int     `json:"neighbors"`
 	Radius    float64 `json:"radius"`
 }
 
@@ -38,28 +39,36 @@ func NewRadiusOptions() *RadiusOptions {
 }
 
 // Radius implements pdal height.
-func Radius(w http.ResponseWriter, r *http.Request,
-	res *job.OutputMsg, msg job.InputMsg, i, o string) {
+func Radius(
+	w http.ResponseWriter,
+	r *http.Request,
+	res *job.OutputMsg,
+	msg job.InputMsg,
+	i, o string,
+) {
 	opts := NewRadiusOptions()
 	if msg.Options != nil {
 		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			job.BadRequest(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
 
 	var args []string
 	args = append(args, "translate", i, o, "radiusoutlier")
-	args = append(args, "--filters.radiusoutlier.min_neighbors="+strconv.Itoa(opts.Neighbors))
-	args = append(args, "--filters.radiusoutlier.radius="+strconv.FormatFloat(opts.Radius, 'f', -1, 64))
+	args = append(args, "--filters.radiusoutlier.min_neighbors="+
+		strconv.Itoa(opts.Neighbors))
+	args = append(args, "--filters.radiusoutlier.radius="+
+		strconv.FormatFloat(opts.Radius, 'f', -1, 64))
 	// we can make this optional later
 	args = append(args, "--filters.radiusoutlier.extract=true")
 	args = append(args, "--filters.radiusoutlier.classify=false")
 	args = append(args, "-v10", "--debug")
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
+	fmt.Println(string(out))
 	if err != nil {
-		fmt.Println(string(out))
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

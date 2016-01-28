@@ -43,7 +43,7 @@ func makeFunction2(fn func(http.ResponseWriter, *http.Request,
 		inputName = s3.ParseFilenameFromKey(msg.Source.Key)
 		fileIn, err := os.Create(inputName)
 		if err != nil {
-			// job.InternalError(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		defer fileIn.Close()
@@ -64,7 +64,7 @@ func makeFunction2(fn func(http.ResponseWriter, *http.Request,
 		// Download the source data from S3, throwing 500 on error.
 		err = s3.Download(fileIn, msg.Source.Bucket, msg.Source.Key)
 		if err != nil {
-			// job.InternalError(w, r, *res, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -76,13 +76,13 @@ func makeFunction2(fn func(http.ResponseWriter, *http.Request,
 		if len(msg.Destination.Key) > 0 {
 			fileOut, err = os.Open(outputName)
 			if err != nil {
-				// job.InternalError(w, r, *res, err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			defer fileOut.Close()
 			err = s3.Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
 			if err != nil {
-				// job.InternalError(w, r, *res, err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}
@@ -100,7 +100,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	// Throw 400 if the JobInput does not specify a function.
 	if msg.Function == nil {
-		job.BadRequest(w, r, res, "Must provide a function")
+		http.Error(w, "Must provide a function", http.StatusBadRequest)
 		return
 	}
 
@@ -144,7 +144,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// An unrecognized function will result in 400 error, with message explaining
 	// how to list available functions.
 	default:
-		job.BadRequest(w, r, res, "")
+		http.Error(w, "Unrecognized function", http.StatusBadRequest)
 		return
 	}
 
