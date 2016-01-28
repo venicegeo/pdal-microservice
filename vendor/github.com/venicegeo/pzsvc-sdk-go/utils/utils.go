@@ -58,12 +58,12 @@ func MakeFunction(fn func(http.ResponseWriter, *http.Request,
 		// error.
 		if len(msg.Destination.Key) > 0 {
 			outputName = s3.ParseFilenameFromKey(msg.Destination.Key)
-			fileOut, err = os.Create(outputName)
-			if err != nil {
-				job.InternalError(w, r, *res, err.Error())
-				return
-			}
-			defer fileOut.Close()
+			// fileOut, err = os.Create(outputName)
+			// if err != nil {
+			// 	job.InternalError(w, r, *res, err.Error())
+			// 	return
+			// }
+			// defer fileOut.Close()
 		}
 
 		// Download the source data from S3, throwing 500 on error.
