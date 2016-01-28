@@ -97,9 +97,9 @@ func MakeFunction(
 			return
 		}
 
-		statFile(outputName)
+		// statFile(outputName)
 		os.Remove(outputName)
-		statFile(outputName)
+		// statFile(outputName)
 
 		// Run the PDAL function.
 		fn(w, r, res, msg, inputName, outputName)
