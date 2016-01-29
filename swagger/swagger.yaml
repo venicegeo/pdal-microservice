@@ -1,0 +1,120 @@
+---
+swagger: '2.0'
+
+################################################################################
+# API Information
+################################################################################
+info:
+  version: '1'
+  title: pzsvc-pdal
+  description: |
+    This service exposes PDAL as a service.
+
+    A typical input message will look something like:
+
+    ```json
+    {
+        "source": {
+            "bucket": "venicegeo-sample-data",
+            "key": "pointcloud/samp11-utm.laz"
+        },
+        "function": "ground",
+        "options": {
+            "slope": 0.5
+        },
+        "destination": {
+            "bucket": "venicegeo-sample-data",
+            "key": "temp/output.laz"
+        }
+    }
+    ```
+
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+################################################################################
+# Host, basePath, schemes
+################################################################################
+host: pzsvc-pdal.cf.piazzageo.io
+basePath: /api/v1
+schemes:
+  - http
+
+################################################################################
+# Paths
+################################################################################
+paths:
+  /:
+    get:
+      summary: Heartbeat
+      responses:
+        200:
+          description: Success
+
+  /functions:
+    get:
+      summary: List of all functions
+      responses:
+        200:
+          description: Success
+
+  /functions/{name}:
+    get:
+      summary: Info for a specific function
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: The name of the function to retrieve
+          type: string
+      responses:
+        200:
+          description: Success
+
+  /pdal:
+    post:
+      summary: Submit a PDAL job
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: payload
+          in: body
+          required: true
+          description: The JSON payload
+          schema:
+            $ref: '#/definitions/InputMsg'
+      responses:
+        200:
+          description: Success
+
+################################################################################
+# Definitions
+################################################################################
+definitions:
+  InputMsg:
+    type: object
+    required:
+      - source
+      - function
+    properties:
+      source:
+        $ref: '#/definitions/S3Bucket'
+      function:
+        type: string
+      options:
+        type: object
+      destination:
+        $ref: '#/definitions/S3Bucket'
+  S3Bucket:
+    type: object
+    required:
+      - bucket
+      - key
+    properties:
+      bucket:
+        type: string
+      key:
+        type: string

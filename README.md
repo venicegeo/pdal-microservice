@@ -222,3 +222,13 @@ $ godep save -r ./...
 ```
 
 to update the Godeps folder and all import paths.
+
+# Postman
+
+To test with [Postman](https://www.getpostman.com), you can import our [collection](https://github.com/venicegeo/pzsvc-pdal/blob/master/postman/pzsvc-pdal.json.postman_collection).
+
+We also provide two environments, one to setup [localhost](https://github.com/venicegeo/pzsvc-pdal/blob/master/postman/pzsvc-pdal.json.postman_environment.local), another to setup [Cloud Foundry](https://github.com/venicegeo/pzsvc-pdal/blob/master/postman/pzsvc-pdal.json.postman_environment.cf).
+
+# Swagger
+
+We have also begun to document the API via Swagger. The current API specification can be found [here](https://github.com/venicegeo/pzsvc-pdal/blob/master/swagger/swagger.yaml), but it is currently incomplete.
