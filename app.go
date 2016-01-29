@@ -106,7 +106,7 @@ func main() {
 		"translate", "vo",
 	}}
 
-	router.GET("/functions/:name",
+	router.GET("/api/v1/functions/:name",
 		func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			var a interface{}
@@ -163,7 +163,7 @@ func main() {
 			}
 		})
 
-	router.GET("/functions",
+	router.GET("/api/v1/functions",
 		func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(http.StatusOK)
@@ -174,7 +174,7 @@ func main() {
 		})
 
 	// // Setup the PDAL service.
-	router.POST("/pdal", handlers.PdalHandler)
+	router.POST("/api/v1/pdal", handlers.PdalHandler)
 
 	// Setup the mocked up JobManager.
 	// router.POST("/manager", handlers.JobManagerHandler)
@@ -185,8 +185,6 @@ func main() {
 	}
 
 	log.Println("Starting on port ", defaultPort)
-	log.Println(os.Getenv("PATH"))
-	log.Println(os.Getenv("LD_LIBRARY_PATH"))
 	if err := http.ListenAndServe(":"+defaultPort, router); err != nil {
 		log.Fatal(err)
 	}

@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -37,8 +36,6 @@ func VO(
 	msg job.InputMsg,
 	i, o string,
 ) {
-	log.Println(i)
-	log.Println(o)
 	out, err := exec.Command("pdal", "vo", i, o, "-v10",
 		"--debug").CombinedOutput()
 
@@ -68,8 +65,7 @@ func VO(
 		return
 	}
 
-	if err := json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(buffer.Bytes()))
 }

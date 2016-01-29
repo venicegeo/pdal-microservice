@@ -17,7 +17,6 @@ limitations under the License.
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -77,9 +76,7 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		utils.MakeFunction(functions.Translate)(w, r, &res, msg)
 
 	case "vo":
-		log.Println("About to call MakeFunction from PdalHandler")
 		utils.MakeFunction(functions.VO)(w, r, &res, msg)
-		log.Println("Returned from MakeFunction")
 
 	// An unrecognized function will result in 400 error, with message explaining
 	// how to list available functions.
@@ -90,6 +87,6 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	// If we made it here, we can record the FinishedAt time, notify the job
 	// manager of success, and return 200.
-	res.FinishedAt = time.Now()
-	job.Okay(w, r, res, "Success!")
+	// res.FinishedAt = time.Now()
+	// job.Okay(w, r, res, "Success!")
 }
