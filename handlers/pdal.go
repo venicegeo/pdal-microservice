@@ -84,9 +84,4 @@ func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		http.Error(w, "Unrecognized function", http.StatusBadRequest)
 		return
 	}
-
-	// If we made it here, we can record the FinishedAt time, notify the job
-	// manager of success, and return 200.
-	// res.FinishedAt = time.Now()
-	// job.Okay(w, r, res, "Success!")
 }

@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
@@ -78,4 +79,9 @@ func Translate(
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// If we made it here, we can record the FinishedAt time, notify the job
+	// manager of success, and return 200.
+	res.FinishedAt = time.Now()
+	job.Okay(w, r, *res, "Success!")
 }
