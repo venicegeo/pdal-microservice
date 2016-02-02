@@ -65,31 +65,23 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pzsvc-pdal/functions"
 	"github.com/venicegeo/pzsvc-pdal/handlers"
+	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
-
-// var pdalMetadata = job.ResourceMetadata{
-// 	Name:         "pdal",
-// 	ServiceID:    "",
-// 	Description:  "Process point cloud data using PDAL.",
-// 	URL:          "https://api.piazzageo.io/v1/pdal",
-// 	Networks:     "TBD",
-// 	QoS:          "Development",
-// 	Availability: "UP",
-// 	Tags:         "point cloud, pdal, lidar",
-// 	ClassType:    "Unclassified",
-// 	// TermDate:            time.Now(),
-// 	// ClientCertRequired:  false,
-// 	// CredentialsRequired: false,
-// 	// PreAuthRequired:     false,
-// 	// Contracts:           "",
-// 	// Method:              "",
-// 	// MimeType:            "",
-// 	// Params:              "",
-// 	// Reason:              "",
-// }
 
 func main() {
 	// For standalone demo purposes, we will start two services: our PDAL service, and a mocked up JobManager.
+
+	m := job.ResourceMetadata{
+		Name:             "pzsvc-pdal",
+		URL:              "http://pzsvc-pdal.cf.piazzageo.io/api/v1/pdal",
+		Description:      "Process point cloud data using PDAL",
+		Method:           "POST",
+		RequestMimeType:  job.ContentTypeJSON,
+		ResponseMimeType: job.ContentTypeJSON,
+	}
+	if err := job.RegisterService(m); err != nil {
+		log.Println(err)
+	}
 
 	router := httprouter.New()
 
