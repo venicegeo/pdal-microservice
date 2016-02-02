@@ -176,6 +176,7 @@ func main() {
 		defaultPort = "8080"
 	}
 
+	log.Println("Force Jenkins to rebuild")
 	log.Println("Starting on port ", defaultPort)
 	if err := http.ListenAndServe(":"+defaultPort, router); err != nil {
 		log.Fatal(err)
