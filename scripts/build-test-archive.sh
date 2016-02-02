@@ -10,6 +10,7 @@ mkdir -p $GOPATH
 ###
 
 export GO15VENDOREXPERIMENT=1
+go version
 
 go get -v github.com/venicegeo/pzsvc-pdal
 
