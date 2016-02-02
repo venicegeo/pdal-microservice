@@ -9,11 +9,11 @@ mkdir -p $GOPATH
 
 ###
 
-go get github.com/venicegeo/pzsvc-pdal
+go get -v github.com/venicegeo/pzsvc-pdal
 
 go test -v github.com/venicegeo/pzsvc-pdal
 
-go install github.com/venicegeo/pzsvc-pdal
+go install -v github.com/venicegeo/pzsvc-pdal
 
 ###
 
