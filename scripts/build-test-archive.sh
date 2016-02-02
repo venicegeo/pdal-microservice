@@ -9,6 +9,8 @@ mkdir -p $GOPATH
 
 ###
 
+export GO15VENDOREXPERIMENT=1
+
 go get -v github.com/venicegeo/pzsvc-pdal
 
 go test -v github.com/venicegeo/pzsvc-pdal
