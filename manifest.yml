@@ -11,3 +11,4 @@ applications:
     LD_LIBRARY_PATH: "/home/vcap/app/pdal"
     PATH: "/home/vcap/app/pdal:/bin:/usr/bin:/home/vcap/app/bin"
     PDAL_DRIVER_PATH: "/home/vcap/app/pdal"
+    GO15VENDOREXPERIMENT: "1"
