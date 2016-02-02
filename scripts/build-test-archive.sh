@@ -6,6 +6,8 @@ popd > /dev/null
 
 export GOPATH=$base/gogo
 mkdir -p $GOPATH
+export GOROOT=/opt/go
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 ###
 
