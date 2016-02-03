@@ -13,7 +13,7 @@ export GO15VENDOREXPERIMENT=1
 
 go get -v github.com/venicegeo/pzsvc-pdal
 
-go test -v $(go list ./... | grep -v /vendor/)
+go test -v $(go list github.com/venicegeo/pzsvc-pdal/... | grep -v /vendor/)
 
 go install -v github.com/venicegeo/pzsvc-pdal
 
