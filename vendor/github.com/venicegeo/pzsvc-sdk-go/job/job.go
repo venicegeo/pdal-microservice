@@ -19,8 +19,8 @@ package job
 
 import (
 	"bytes"
-	"errors"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -77,19 +77,19 @@ type OutputMsg struct {
 
 // ResourceMetadata defines the metadata required to register the service.
 type ResourceMetadata struct {
-	Name                string    `json:"name"`
-	Description         string    `json:"description"`
-	URL                 string    `json:"url"`
-	Method              string    `json:"method,omitempty"`
-  RequestMimeType     string    `json:"requestMimeType,omitempty"`
-	ResponseMimeType    string    `json:"responseMimeType,omitempty"`
-	Params              string    `json:"params,omitempty"`
+	Name             string `json:"name"`
+	Description      string `json:"description"`
+	URL              string `json:"url"`
+	Method           string `json:"method,omitempty"`
+	RequestMimeType  string `json:"requestMimeType,omitempty"`
+	ResponseMimeType string `json:"responseMimeType,omitempty"`
+	Params           string `json:"params,omitempty"`
 }
 
 // RegisterServiceMsg defines the expected output JSON returned by Piazza when
 // an external service is registered.
 type RegisterServiceMsg struct {
-	ResourceID          string    `json:"resourceId"`
+	ResourceID string `json:"resourceId"`
 }
 
 // UpdateMsg defines the expected output JSON structure for updating the
@@ -189,17 +189,20 @@ func GetInputMsg(
 	// 400 if missing.
 	if r.Body == nil {
 		http.Error(w, "No JSON", http.StatusBadRequest)
+		return msg
 	}
 
 	// Throw 500 if we cannot read the body.
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return msg
 	}
 
 	// Throw 400 if we cannot unmarshal the body as a valid InputMsg.
 	if err := json.Unmarshal(b, &msg); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return msg
 	}
 
 	return msg
@@ -210,13 +213,14 @@ const ContentTypeJSON = "application/json"
 
 // registryURL is the Piazza registration endpoint
 const RegistryURL = "http://pz-servicecontroller.cf.piazzageo.io/servicecontroller/registerService"
+
 //const RegistryURL = "http://localhost:8082/servicecontroller/registerService"
 
 /*
 RegisterService handles service registartion with Piazza for external services.
 */
 func RegisterService(m ResourceMetadata) error {
-  data, err := json.Marshal(m)
+	data, err := json.Marshal(m)
 	if err != nil {
 		return err
 	}
@@ -232,15 +236,15 @@ func RegisterService(m ResourceMetadata) error {
 
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return err;
+		return err
 	}
 
 	// Throw 400 if we cannot unmarshal the body as a valid InputMsg.
-	var rm RegisterServiceMsg;
+	var rm RegisterServiceMsg
 	if err := json.Unmarshal(b, &rm); err != nil {
-		return err;
+		return err
 	}
-	log.Println("RegisterService received resourceId="+rm.ResourceID)
+	log.Println("RegisterService received resourceId=" + rm.ResourceID)
 
 	return nil
 }
