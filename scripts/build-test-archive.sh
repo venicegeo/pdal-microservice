@@ -6,13 +6,10 @@ popd > /dev/null
 
 export GOPATH=$base/gogo
 mkdir -p $GOPATH
-export GOROOT=/opt/go
-export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 ###
 
 export GO15VENDOREXPERIMENT=1
-go version
 
 go get -v github.com/venicegeo/pzsvc-pdal
 
