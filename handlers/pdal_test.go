@@ -111,8 +111,8 @@ func TestNoFunctionField(t *testing.T) {
 	}`
 	reader := strings.NewReader(userJSON)
 	router := httprouter.New()
-	router.POST("/pdal", PdalHandler)
-	req, _ := http.NewRequest("POST", "/pdal", reader)
+	router.POST("/api/v1/pdal", PdalHandler)
+	req, _ := http.NewRequest("POST", "/api/v1/pdal", reader)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	fmt.Println(w.Body)
@@ -133,8 +133,8 @@ func TestBadFunction(t *testing.T) {
 	}`
 	reader := strings.NewReader(userJSON)
 	router := httprouter.New()
-	router.POST("/pdal", PdalHandler)
-	req, _ := http.NewRequest("POST", "/pdal", reader)
+	router.POST("/api/v1/pdal", PdalHandler)
+	req, _ := http.NewRequest("POST", "/api/v1/pdal", reader)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	fmt.Println(w.Body)

@@ -72,15 +72,15 @@
 		},
 		{
 			"ImportPath": "github.com/venicegeo/pzsvc-sdk-go/job",
-			"Rev": "eadc51bb390403251fa08c183a898a2b1f70b085"
+			"Rev": "6c8a6e1c6490d9f1a6bbc8b426b2c68a7811b442"
 		},
 		{
 			"ImportPath": "github.com/venicegeo/pzsvc-sdk-go/s3",
-			"Rev": "eadc51bb390403251fa08c183a898a2b1f70b085"
+			"Rev": "6c8a6e1c6490d9f1a6bbc8b426b2c68a7811b442"
 		},
 		{
 			"ImportPath": "github.com/venicegeo/pzsvc-sdk-go/utils",
-			"Rev": "eadc51bb390403251fa08c183a898a2b1f70b085"
+			"Rev": "6c8a6e1c6490d9f1a6bbc8b426b2c68a7811b442"
 		}
 	]
 }

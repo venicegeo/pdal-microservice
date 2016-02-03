@@ -222,12 +222,14 @@ RegisterService handles service registartion with Piazza for external services.
 func RegisterService(m ResourceMetadata) error {
 	data, err := json.Marshal(m)
 	if err != nil {
-		return err
+		return errors.New("Error marshaling ResourceMetadata")
 	}
 
-	response, err := http.Post(RegistryURL, ContentTypeJSON, bytes.NewBuffer(data))
+	response, err := http.Post(
+		RegistryURL, ContentTypeJSON, bytes.NewBuffer(data),
+	)
 	if err != nil {
-		return err
+		return errors.New("Error posting ResourceMetadata to registerService")
 	}
 
 	if response.Body == nil {
@@ -236,13 +238,13 @@ func RegisterService(m ResourceMetadata) error {
 
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return err
+		return errors.New("Error reading JSON body returned from registerService")
 	}
 
 	// Throw 400 if we cannot unmarshal the body as a valid InputMsg.
 	var rm RegisterServiceMsg
 	if err := json.Unmarshal(b, &rm); err != nil {
-		return err
+		return errors.New("Error unmarshaling RegisterServiceMsg")
 	}
 	log.Println("RegisterService received resourceId=" + rm.ResourceID)
 
