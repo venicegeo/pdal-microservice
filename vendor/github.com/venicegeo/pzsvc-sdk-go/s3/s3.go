@@ -38,17 +38,22 @@ For example,
 package s3
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
+
+// Bucket defines the expected JSON structure for S3 buckets.
+// An S3 bucket can be used for source (input) and destination (output) files.
+type Bucket struct {
+	Bucket string `json:"bucket,omitempty"`
+	Key    string `json:"key,omitempty"`
+}
 
 /*
 Download downloads a file from S3.
@@ -64,11 +69,6 @@ func Download(file *os.File, bucket, key string) error {
 			Key:    aws.String(key),
 		})
 	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			log.Println("Error:", awsErr.Code(), awsErr.Message())
-		} else {
-			fmt.Println(err.Error())
-		}
 		return err
 	}
 	log.Println("Downloaded", numBytes, "bytes")
@@ -89,11 +89,6 @@ func Upload(file *os.File, bucket, key string) error {
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			log.Println("Error:", awsErr.Code(), awsErr.Message())
-		} else {
-			fmt.Println(err.Error())
-		}
 		return err
 	}
 	log.Println("Successfully uploaded to", result.Location)

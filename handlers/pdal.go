@@ -17,71 +17,296 @@ limitations under the License.
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pzsvc-pdal/functions"
 	"github.com/venicegeo/pzsvc-sdk-go/job"
-	"github.com/venicegeo/pzsvc-sdk-go/utils"
+	"github.com/venicegeo/pzsvc-sdk-go/s3"
 )
 
+type AppError struct {
+	Error   error
+	Message string
+	Code    int
+}
+
+// InputMsg defines the expected input JSON structure.
+// We currently support S3 input (bucket/key), though provider-specific (e.g.,
+// GRiD) may be legitimate.
+type InputMsg struct {
+	Source      s3.Bucket        `json:"source,omitempty"`
+	Function    *string          `json:"function,omitempty"`
+	Options     *json.RawMessage `json:"options,omitempty"`
+	Destination s3.Bucket        `json:"destination,omitempty"`
+}
+
+// FunctionFunc defines the signature of our function creator.
+type FunctionFunc func(InputMsg) ([]byte, error)
+
+// MakeFunction wraps the individual PDAL functions.
+// Parse the input and output filenames, creating files as needed. Download the
+// input data and upload the output data.
+func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) FunctionFunc {
+	return func(msg InputMsg) ([]byte, error) {
+		var inputName, outputName string
+		var fileIn, fileOut *os.File
+
+		// Split the source S3 key string, interpreting the last element as the
+		// input filename. Create the input file, throwing 500 on error.
+		inputName = s3.ParseFilenameFromKey(msg.Source.Key)
+		fileIn, err := os.Create(inputName)
+		if err != nil {
+			return nil, err
+		}
+		defer fileIn.Close()
+
+		// If provided, split the destination S3 key string, interpreting the last
+		// element as the output filename. Create the output file, throwing 500 on
+		// error.
+		if len(msg.Destination.Key) > 0 {
+			outputName = s3.ParseFilenameFromKey(msg.Destination.Key)
+		}
+
+		// Download the source data from S3, throwing 500 on error.
+		err = s3.Download(fileIn, msg.Source.Bucket, msg.Source.Key)
+		if err != nil {
+			return nil, err
+		}
+
+		os.Remove(outputName)
+
+		// Run the PDAL function.
+		retval, err := fn(inputName, outputName, msg.Options)
+		if err != nil {
+			return nil, err
+		}
+
+		// If an output has been created, upload the destination data to S3,
+		// throwing 500 on error.
+		if len(msg.Destination.Key) > 0 {
+			fileOut, err = os.Open(outputName)
+			if err != nil {
+				return nil, err
+			}
+			defer fileOut.Close()
+			err = s3.Upload(fileOut, msg.Destination.Bucket, msg.Destination.Key)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return retval, nil
+	}
+}
+
 // PdalHandler handles PDAL jobs.
-func PdalHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func PdalHandler(w http.ResponseWriter, r *http.Request) *AppError {
 	// Create the job output message. No matter what happens, we should always be
 	// able to populate the StartedAt field.
 	var res job.OutputMsg
 	res.StartedAt = time.Now()
 
-	msg := job.GetInputMsg(w, r, res)
+	var msg InputMsg
+
+	// There should always be a body, else how are we to know what to do? Throw
+	// 400 if missing.
+	if r.Body == nil {
+		return &AppError{nil, "No JSON", http.StatusBadRequest}
+	}
+
+	// Throw 500 if we cannot read the body.
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return &AppError{err, err.Error(), http.StatusInternalServerError}
+	}
+
+	// Throw 400 if we cannot unmarshal the body as a valid InputMsg.
+	if err := json.Unmarshal(b, &msg); err != nil {
+		return &AppError{err, err.Error(), http.StatusBadRequest}
+	}
 
 	// Throw 400 if the JobInput does not specify a function.
 	if msg.Function == nil {
-		http.Error(w, "Must provide a function", http.StatusBadRequest)
-		return
+		return &AppError{nil, "Must provide a function", http.StatusBadRequest}
 	}
-
-	// If everything is okay up to this point, we will echo the JobInput in the
-	// JobOutput and mark the job as Running.
-	res.Input = msg
-	job.Update(job.Running, r)
 
 	// Make/execute the requested function.
 	switch *msg.Function {
 	case "crop":
-		utils.MakeFunction(functions.Crop)(w, r, &res, msg)
+		_, err := MakeFunction(functions.Crop)(msg)
+		if err != nil {
+			return &AppError{err, err.Error(), http.StatusInternalServerError}
+		}
+
+		res.FinishedAt = time.Now()
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		res.Code = http.StatusOK
+		res.Message = "Success"
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 	case "dart":
-		utils.MakeFunction(functions.Dart)(w, r, &res, msg)
+		_, err := MakeFunction(functions.Dart)(msg)
+		if err != nil {
+			return &AppError{err, err.Error(), http.StatusInternalServerError}
+		}
+
+		res.FinishedAt = time.Now()
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		res.Code = http.StatusOK
+		res.Message = "Success"
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 	case "dtm":
-		utils.MakeFunction(functions.Dtm)(w, r, &res, msg)
+		_, err := MakeFunction(functions.Dtm)(msg)
+		if err != nil {
+			return &AppError{err, "DTM error", http.StatusInternalServerError}
+		}
+
+		res.FinishedAt = time.Now()
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		res.Code = http.StatusOK
+		res.Message = "Success"
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 	case "ground":
-		utils.MakeFunction(functions.Ground)(w, r, &res, msg)
+		_, err := MakeFunction(functions.Ground)(msg)
+		if err != nil {
+			return &AppError{err, err.Error(), http.StatusInternalServerError}
+		}
+
+		res.FinishedAt = time.Now()
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		res.Code = http.StatusOK
+		res.Message = "Success"
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 	case "height":
-		utils.MakeFunction(functions.Height)(w, r, &res, msg)
+		_, err := MakeFunction(functions.Height)(msg)
+		if err != nil {
+			return &AppError{err, err.Error(), http.StatusInternalServerError}
+		}
+
+		res.FinishedAt = time.Now()
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		res.Code = http.StatusOK
+		res.Message = "Success"
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 	case "info":
-		utils.MakeFunction(functions.Info)(w, r, &res, msg)
+		bytes, err := MakeFunction(functions.Info)(msg)
+		if err != nil {
+			return &AppError{err, "Info error", http.StatusInternalServerError}
+		}
+		if err := json.Unmarshal(bytes, &res.Response); err != nil {
+			return &AppError{err, "Info error", http.StatusInternalServerError}
+		}
+
+		res.FinishedAt = time.Now()
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		res.Code = http.StatusOK
+		res.Message = "Success"
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 	case "radius":
-		utils.MakeFunction(functions.Radius)(w, r, &res, msg)
+		_, err := MakeFunction(functions.Radius)(msg)
+		if err != nil {
+			return &AppError{err, "Radius error", http.StatusInternalServerError}
+		}
+
+		res.FinishedAt = time.Now()
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		res.Code = http.StatusOK
+		res.Message = "Success"
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 	case "statistical":
-		utils.MakeFunction(functions.Statistical)(w, r, &res, msg)
+		_, err := MakeFunction(functions.Statistical)(msg)
+		if err != nil {
+			return &AppError{err, err.Error(), http.StatusInternalServerError}
+		}
+
+		res.FinishedAt = time.Now()
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		res.Code = http.StatusOK
+		res.Message = "Success"
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 	case "translate":
-		utils.MakeFunction(functions.Translate)(w, r, &res, msg)
+		_, err := MakeFunction(functions.Translate)(msg)
+		if err != nil {
+			return &AppError{err, err.Error(), http.StatusInternalServerError}
+		}
+
+		res.FinishedAt = time.Now()
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		res.Code = http.StatusOK
+		res.Message = "Success"
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 	case "vo":
-		utils.MakeFunction(functions.VO)(w, r, &res, msg)
+		bytes, err := MakeFunction(functions.VO)(msg)
+		if err != nil {
+			return &AppError{err, err.Error(), http.StatusInternalServerError}
+		}
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, string(bytes))
 
 	// An unrecognized function will result in 400 error, with message explaining
 	// how to list available functions.
 	default:
-		http.Error(w, "Unrecognized function", http.StatusBadRequest)
-		return
+		return &AppError{nil, "Unrecognized function", http.StatusBadRequest}
 	}
+
+	return nil
 }

@@ -19,12 +19,9 @@ package functions
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"os"
 	"os/exec"
 	"strconv"
-	"time"
-
-	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // DtmOptions defines options for the Dtm function.
@@ -38,18 +35,11 @@ func NewDtmOptions() *DtmOptions {
 }
 
 // Dtm implements pdal dtm.
-func Dtm(
-	w http.ResponseWriter,
-	r *http.Request,
-	res *job.OutputMsg,
-	msg job.InputMsg,
-	i, o string,
-) {
+func Dtm(i, o string, options *json.RawMessage) ([]byte, error) {
 	opts := NewDtmOptions()
-	if msg.Options != nil {
-		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+	if options != nil {
+		if err := json.Unmarshal(*options, &opts); err != nil {
+			return nil, err
 		}
 	}
 
@@ -73,12 +63,13 @@ func Dtm(
 
 	fmt.Println(string(out))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	// If we made it here, we can record the FinishedAt time, notify the job
-	// manager of success, and return 200.
-	res.FinishedAt = time.Now()
-	job.Okay(w, r, *res, "Success!")
+	err = os.Rename("output.min.tif", o)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }

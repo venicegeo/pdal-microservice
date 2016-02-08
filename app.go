@@ -62,24 +62,38 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pzsvc-pdal/functions"
 	"github.com/venicegeo/pzsvc-pdal/handlers"
-	"github.com/venicegeo/pzsvc-sdk-go/job"
+	"github.com/venicegeo/pzsvc-sdk-go/servicecontroller"
 )
 
-func main() {
-	// For standalone demo purposes, we will start two services: our PDAL service, and a mocked up JobManager.
+type appHandler func(http.ResponseWriter, *http.Request) *handlers.AppError
 
-	m := job.ResourceMetadata{
+func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if e := fn(w, r); e != nil { // e is *appError, not os.Error.
+		if awsErr, ok := e.Error.(awserr.Error); ok {
+			e.Message = awsErr.Message()
+		}
+
+		if err := json.NewEncoder(w).Encode(e); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		w.WriteHeader(e.Code)
+	}
+}
+
+func main() {
+	m := servicecontroller.ResourceMetadata{
 		Name:             "pzsvc-pdal",
 		URL:              "http://pzsvc-pdal.cf.piazzageo.io/api/v1/pdal",
 		Description:      "Process point cloud data using PDAL",
 		Method:           "POST",
-		RequestMimeType:  job.ContentTypeJSON,
-		ResponseMimeType: job.ContentTypeJSON,
+		RequestMimeType:  servicecontroller.ContentTypeJSON,
+		ResponseMimeType: servicecontroller.ContentTypeJSON,
 	}
-	if err := job.RegisterService(m); err != nil {
+	if err := servicecontroller.RegisterService(m); err != nil {
 		log.Println(err)
 	}
 
@@ -166,10 +180,7 @@ func main() {
 		})
 
 	// // Setup the PDAL service.
-	router.POST("/api/v1/pdal", handlers.PdalHandler)
-
-	// Setup the mocked up JobManager.
-	// router.POST("/manager", handlers.JobManagerHandler)
+	router.Handler("POST", "/api/v1/pdal", appHandler(handlers.PdalHandler))
 
 	var defaultPort = os.Getenv("PORT")
 	if defaultPort == "" {

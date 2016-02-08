@@ -19,11 +19,7 @@ package functions
 import (
 	"bytes"
 	"encoding/json"
-	"net/http"
 	"os/exec"
-	"time"
-
-	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // InfoOptions defines options for the Info function.
@@ -46,23 +42,16 @@ func NewInfoOptions() *InfoOptions {
 }
 
 // Info implements pdal info.
-func Info(
-	w http.ResponseWriter,
-	r *http.Request,
-	res *job.OutputMsg,
-	msg job.InputMsg,
-	i, o string,
-) {
+func Info(i, o string, options *json.RawMessage) ([]byte, error) {
 	opts := NewInfoOptions()
-	if msg.Options != nil {
-		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+	if options != nil {
+		if err := json.Unmarshal(*options, &opts); err != nil {
+			return nil, err
 		}
 	}
 
 	var args []string
-	args = append(args, *msg.Function)
+	args = append(args, "info")
 	args = append(args, i)
 	if opts.Boundary {
 		args = append(args, "--boundary")
@@ -79,17 +68,8 @@ func Info(
 	// Trim whitespace
 	buffer := new(bytes.Buffer)
 	if err := json.Compact(buffer, out); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	if err := json.Unmarshal(buffer.Bytes(), &res.Response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// If we made it here, we can record the FinishedAt time, notify the job
-	// manager of success, and return 200.
-	res.FinishedAt = time.Now()
-	job.Okay(w, r, *res, "Success!")
+	return buffer.Bytes(), nil
 }
