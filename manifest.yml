@@ -2,12 +2,10 @@ applications:
 - name: pzsvc-pdal
   host: pzsvc-pdal
   memory: 1G
+  disk_quota: 2G
   instances: 1
   timeout: 80
   command: ./pzsvc-pdal
-  buildpack: https://github.com/venicegeo/binary-pdal-buildpack
   env:
-    GDAL_DATA: "/home/vcap/app/gdal/1.10"
-    LD_LIBRARY_PATH: "/home/vcap/app/pdal"
-    PATH: "/home/vcap/app/pdal:/bin:/usr/bin:/home/vcap/app/bin"
-    PDAL_DRIVER_PATH: "/home/vcap/app/pdal"
+    GDAL_DATA: "/usr/share/gdal/1.10"
+    PDAL_DRIVER_PATH: "/usr/lib"
