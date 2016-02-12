@@ -19,11 +19,7 @@ package functions
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os/exec"
-	"time"
-
-	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // CropOptions defines options for the Crop function.
@@ -54,18 +50,11 @@ The Crop function will invoke the PDAL translate command as follows:
 	  [--filters.crop.outside=<true|false>] \
 	  -v10 --debug
 */
-func Crop(
-	w http.ResponseWriter,
-	r *http.Request,
-	res *job.OutputMsg,
-	msg job.InputMsg,
-	i, o string,
-) {
+func Crop(i, o string, options *json.RawMessage) ([]byte, error) {
 	opts := NewCropOptions()
-	if msg.Options != nil {
-		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+	if options != nil {
+		if err := json.Unmarshal(*options, &opts); err != nil {
+			return nil, err
 		}
 	}
 
@@ -90,12 +79,8 @@ func Crop(
 
 	fmt.Println(string(out))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	// If we made it here, we can record the FinishedAt time, notify the job
-	// manager of success, and return 200.
-	res.FinishedAt = time.Now()
-	job.Okay(w, r, *res, "Success!")
+	return nil, nil
 }

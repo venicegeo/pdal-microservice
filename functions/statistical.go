@@ -19,12 +19,8 @@ package functions
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os/exec"
 	"strconv"
-	"time"
-
-	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // StatisticalOptions defines options for the Statical function.
@@ -41,18 +37,11 @@ func NewStatisticalOptions() *StatisticalOptions {
 }
 
 // Statistical implements pdal height.
-func Statistical(
-	w http.ResponseWriter,
-	r *http.Request,
-	res *job.OutputMsg,
-	msg job.InputMsg,
-	i, o string,
-) {
+func Statistical(i, o string, options *json.RawMessage) ([]byte, error) {
 	opts := NewStatisticalOptions()
-	if msg.Options != nil {
-		if err := json.Unmarshal(*msg.Options, &opts); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+	if options != nil {
+		if err := json.Unmarshal(*options, &opts); err != nil {
+			return nil, err
 		}
 	}
 
@@ -70,12 +59,8 @@ func Statistical(
 
 	fmt.Println(string(out))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	// If we made it here, we can record the FinishedAt time, notify the job
-	// manager of success, and return 200.
-	res.FinishedAt = time.Now()
-	job.Okay(w, r, *res, "Success!")
+	return nil, nil
 }

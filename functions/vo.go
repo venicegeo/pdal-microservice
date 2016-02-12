@@ -21,51 +21,36 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
-
-	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // VO implements pdal vo.
-func VO(
-	w http.ResponseWriter,
-	r *http.Request,
-	res *job.OutputMsg,
-	msg job.InputMsg,
-	i, o string,
-) {
+func VO(i, o string, options *json.RawMessage) ([]byte, error) {
 	out, err := exec.Command("pdal", "vo", i, o, "-v10",
 		"--debug").CombinedOutput()
 
 	fmt.Println(string(out))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	fileOut, err := os.Open(o)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	defer fileOut.Close()
 
 	src, err := ioutil.ReadAll(fileOut)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	// Trim whitespace
 	buffer := new(bytes.Buffer)
 	if err := json.Compact(buffer, src); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, string(buffer.Bytes()))
+	return buffer.Bytes(), nil
 }

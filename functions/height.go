@@ -17,34 +17,21 @@ limitations under the License.
 package functions
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/http"
 	"os/exec"
-	"time"
-
-	"github.com/venicegeo/pzsvc-sdk-go/job"
 )
 
 // Height implements pdal height.
-func Height(
-	w http.ResponseWriter,
-	r *http.Request,
-	res *job.OutputMsg,
-	msg job.InputMsg,
-	i, o string,
-) {
+func Height(i, o string, options *json.RawMessage) ([]byte, error) {
 	out, err := exec.Command("pdal", "translate", i, o,
 		"ground", "height", "ferry",
 		"--filters.ferry.dimensions=Height=Z", "-v10", "--debug").CombinedOutput()
 
 	fmt.Println(string(out))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	// If we made it here, we can record the FinishedAt time, notify the job
-	// manager of success, and return 200.
-	res.FinishedAt = time.Now()
-	job.Okay(w, r, *res, "Success!")
+	return nil, nil
 }
