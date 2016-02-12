@@ -39,7 +39,7 @@ type AppError struct {
 // We currently support S3 input (bucket/key), though provider-specific (e.g.,
 // GRiD) may be legitimate.
 type InputMsg struct {
-	Source      s3.Bucket        `json:"source,omitempty"`
+	Source      interface{}      `json:"source,omitempty"`
 	Function    *string          `json:"function,omitempty"`
 	Options     *json.RawMessage `json:"options,omitempty"`
 	Destination s3.Bucket        `json:"destination,omitempty"`
@@ -56,26 +56,31 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 		var inputName, outputName string
 		var fileIn, fileOut *os.File
 
-		// Split the source S3 key string, interpreting the last element as the
-		// input filename. Create the input file, throwing 500 on error.
-		inputName = s3.ParseFilenameFromKey(msg.Source.Key)
-		fileIn, err := os.Create(inputName)
-		if err != nil {
-			return nil, err
+		switch u := msg.Source.(type) {
+		case s3.Bucket:
+			// Split the source S3 key string, interpreting the last element as the
+			// input filename. Create the input file, throwing 500 on error.
+			inputName = s3.ParseFilenameFromKey(u.Key)
+			fileIn, err := os.Create(inputName)
+			if err != nil {
+				return nil, err
+			}
+			defer fileIn.Close()
+
+			// Download the source data from S3, throwing 500 on error.
+			err = s3.Download(fileIn, u.Bucket, u.Key)
+			if err != nil {
+				return nil, err
+			}
+		case string:
+
 		}
-		defer fileIn.Close()
 
 		// If provided, split the destination S3 key string, interpreting the last
 		// element as the output filename. Create the output file, throwing 500 on
 		// error.
 		if len(msg.Destination.Key) > 0 {
 			outputName = s3.ParseFilenameFromKey(msg.Destination.Key)
-		}
-
-		// Download the source data from S3, throwing 500 on error.
-		err = s3.Download(fileIn, msg.Source.Bucket, msg.Source.Key)
-		if err != nil {
-			return nil, err
 		}
 
 		os.Remove(outputName)
