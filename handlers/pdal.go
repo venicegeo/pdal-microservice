@@ -19,9 +19,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"path"
 	"time"
 
 	"github.com/venicegeo/pzsvc-pdal/functions"
@@ -54,10 +57,13 @@ type FunctionFunc func(InputMsg) ([]byte, error)
 func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) FunctionFunc {
 	return func(msg InputMsg) ([]byte, error) {
 		var inputName, outputName string
-		var fileIn, fileOut *os.File
-
+		var fileOut *os.File
+		log.Printf("%+v\n", msg.Source)
 		switch u := msg.Source.(type) {
-		case s3.Bucket:
+		case *s3.Bucket:
+			fmt.Printf("%+v\n", u)
+			fmt.Println(u.Bucket)
+			fmt.Println(u.Key)
 			// Split the source S3 key string, interpreting the last element as the
 			// input filename. Create the input file, throwing 500 on error.
 			inputName = s3.ParseFilenameFromKey(u.Key)
@@ -73,7 +79,33 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 				return nil, err
 			}
 		case string:
+			client := &http.Client{}
 
+			req, err := http.NewRequest("GET", u, nil)
+			_, inputName = path.Split(u)
+
+			resp, err := client.Do(req)
+			log.Println(resp.Header)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer resp.Body.Close()
+			log.Println(resp.Status)
+
+			fileIn, err := os.Create(inputName)
+			if err != nil {
+				return nil, err
+			}
+			defer fileIn.Close()
+
+			numBytes, err := io.Copy(fileIn, resp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			log.Println("Downloaded", numBytes, "bytes")
+		default:
+			log.Println("unknown")
 		}
 
 		// If provided, split the destination S3 key string, interpreting the last
