@@ -19,9 +19,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"path"
 	"time"
 
 	"github.com/venicegeo/pzsvc-pdal/functions"
@@ -39,7 +42,7 @@ type AppError struct {
 // We currently support S3 input (bucket/key), though provider-specific (e.g.,
 // GRiD) may be legitimate.
 type InputMsg struct {
-	Source      s3.Bucket        `json:"source,omitempty"`
+	Source      interface{}      `json:"source,omitempty"`
 	Function    *string          `json:"function,omitempty"`
 	Options     *json.RawMessage `json:"options,omitempty"`
 	Destination s3.Bucket        `json:"destination,omitempty"`
@@ -54,28 +57,62 @@ type FunctionFunc func(InputMsg) ([]byte, error)
 func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) FunctionFunc {
 	return func(msg InputMsg) ([]byte, error) {
 		var inputName, outputName string
-		var fileIn, fileOut *os.File
+		var fileOut *os.File
+		log.Printf("%+v\n", msg.Source)
+		switch u := msg.Source.(type) {
+		case *s3.Bucket:
+			fmt.Printf("%+v\n", u)
+			fmt.Println(u.Bucket)
+			fmt.Println(u.Key)
+			// Split the source S3 key string, interpreting the last element as the
+			// input filename. Create the input file, throwing 500 on error.
+			inputName = s3.ParseFilenameFromKey(u.Key)
+			fileIn, err := os.Create(inputName)
+			if err != nil {
+				return nil, err
+			}
+			defer fileIn.Close()
 
-		// Split the source S3 key string, interpreting the last element as the
-		// input filename. Create the input file, throwing 500 on error.
-		inputName = s3.ParseFilenameFromKey(msg.Source.Key)
-		fileIn, err := os.Create(inputName)
-		if err != nil {
-			return nil, err
+			// Download the source data from S3, throwing 500 on error.
+			err = s3.Download(fileIn, u.Bucket, u.Key)
+			if err != nil {
+				return nil, err
+			}
+		case string:
+			client := &http.Client{}
+
+			req, err := http.NewRequest("GET", u, nil)
+			_, inputName = path.Split(u)
+
+			resp, err := client.Do(req)
+			log.Println(resp.Header)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer resp.Body.Close()
+			log.Println(resp.Status)
+
+			fileIn, err := os.Create(inputName)
+			if err != nil {
+				return nil, err
+			}
+			defer fileIn.Close()
+
+			numBytes, err := io.Copy(fileIn, resp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			log.Println("Downloaded", numBytes, "bytes")
+		default:
+			log.Println("unknown")
 		}
-		defer fileIn.Close()
 
 		// If provided, split the destination S3 key string, interpreting the last
 		// element as the output filename. Create the output file, throwing 500 on
 		// error.
 		if len(msg.Destination.Key) > 0 {
 			outputName = s3.ParseFilenameFromKey(msg.Destination.Key)
-		}
-
-		// Download the source data from S3, throwing 500 on error.
-		err = s3.Download(fileIn, msg.Source.Bucket, msg.Source.Key)
-		if err != nil {
-			return nil, err
 		}
 
 		os.Remove(outputName)
