@@ -26,7 +26,8 @@ import (
 func Height(i, o string, options *json.RawMessage) ([]byte, error) {
 	out, err := exec.Command("pdal", "translate", i, o,
 		"ground", "height", "ferry",
-		"--filters.ferry.dimensions=Height=Z", "-v10", "--debug").CombinedOutput()
+		"--filters.ferry.dimensions=HeightAboveGround=Z", "-v", "10",
+		"--debug").CombinedOutput()
 
 	fmt.Println(string(out))
 	if err != nil {

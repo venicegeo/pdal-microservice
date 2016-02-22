@@ -60,24 +60,6 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 		var fileOut *os.File
 		log.Printf("%+v\n", msg.Source)
 		switch u := msg.Source.(type) {
-		case *s3.Bucket:
-			fmt.Printf("%+v\n", u)
-			fmt.Println(u.Bucket)
-			fmt.Println(u.Key)
-			// Split the source S3 key string, interpreting the last element as the
-			// input filename. Create the input file, throwing 500 on error.
-			inputName = s3.ParseFilenameFromKey(u.Key)
-			fileIn, err := os.Create(inputName)
-			if err != nil {
-				return nil, err
-			}
-			defer fileIn.Close()
-
-			// Download the source data from S3, throwing 500 on error.
-			err = s3.Download(fileIn, u.Bucket, u.Key)
-			if err != nil {
-				return nil, err
-			}
 		case string:
 			client := &http.Client{}
 
@@ -85,10 +67,10 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 			_, inputName = path.Split(u)
 
 			resp, err := client.Do(req)
-			log.Println(resp.Header)
 			if err != nil {
 				log.Fatal(err)
 			}
+			log.Println(resp.Header)
 			defer resp.Body.Close()
 			log.Println(resp.Status)
 
@@ -105,7 +87,37 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 
 			log.Println("Downloaded", numBytes, "bytes")
 		default:
-			log.Println("unknown")
+			log.Println("unknown - try as s3 bucket")
+
+			// TODO(chambbj): we know there is a more idiomatic way of achieving this,
+			// but it works
+			fmt.Printf("%+v\n", msg.Source)
+			src := new(s3.Bucket)
+			b, err := json.Marshal(msg.Source)
+			if err != nil {
+				log.Println("error marshaling")
+			}
+			err = json.Unmarshal(b, &src)
+			if err != nil {
+				log.Println("must not be an s3 bucket")
+			}
+
+			fmt.Println(src.Bucket)
+			fmt.Println(src.Key)
+			// Split the source S3 key string, interpreting the last element as the
+			// input filename. Create the input file, throwing 500 on error.
+			inputName = s3.ParseFilenameFromKey(src.Key)
+			fileIn, err := os.Create(inputName)
+			if err != nil {
+				return nil, err
+			}
+			defer fileIn.Close()
+
+			// Download the source data from S3, throwing 500 on error.
+			err = s3.Download(fileIn, src.Bucket, src.Key)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		// If provided, split the destination S3 key string, interpreting the last

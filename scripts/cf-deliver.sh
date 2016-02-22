@@ -8,4 +8,7 @@ popd > /dev/null
 source $base/vars.sh
 
 # do we have this artifact in s3? If not, fail.
-[ -f $base/../pzsvc-pdal ] || { aws s3 ls $S3URL && aws s3 cp $S3URL $base/../pzsvc-pdal || exit 1; }
+#[ -f $base/../pzsvc-pdal ] || { aws s3 ls $S3URL && aws s3 cp $S3URL $base/../pzsvc-pdal || exit 1; }
+
+docker pull chambbj/cflinuxfs2-pdal
+docker run -p 8080:8080 --rm chambbj/cflinuxfs2-pdal

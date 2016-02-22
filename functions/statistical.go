@@ -47,14 +47,14 @@ func Statistical(i, o string, options *json.RawMessage) ([]byte, error) {
 
 	var args []string
 	args = append(args, "translate", i, o, "statisticaloutlier")
-	args = append(args, "--filters.statisticaloutlier.k-neighbors="+
+	args = append(args, "--filters.statisticaloutlier.mean_k="+
 		strconv.Itoa(opts.Neighbors))
-	args = append(args, "--filters.statisticaloutlier.thresh="+
+	args = append(args, "--filters.statisticaloutlier.multiplier="+
 		strconv.FormatFloat(opts.Thresh, 'f', -1, 64))
 	// we can make this optional later
 	args = append(args, "--filters.statisticaloutlier.extract=true")
 	args = append(args, "--filters.statisticaloutlier.classify=false")
-	args = append(args, "-v10", "--debug")
+	args = append(args, "-v", "10", "--debug")
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
 	fmt.Println(string(out))

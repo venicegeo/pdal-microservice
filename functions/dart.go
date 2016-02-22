@@ -46,7 +46,7 @@ func Dart(i, o string, options *json.RawMessage) ([]byte, error) {
 	args = append(args, "translate", i, o, "dartsample")
 	args = append(args, "--filters.dartsample.radius="+
 		strconv.FormatFloat(opts.Radius, 'f', -1, 64))
-	args = append(args, "-v10", "--debug")
+	args = append(args, "-v", "10", "--debug")
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
 	fmt.Println(string(out))
