@@ -3,7 +3,8 @@
 	"name": "pzsvc-pdal-black-box-tests",
 	"description": "",
 	"order": [
-		"0c40f90b-0818-4ed4-d952-e2ebfec30837"
+		"0c40f90b-0818-4ed4-d952-e2ebfec30837",
+		"42c2e8ea-22e9-f632-7f16-e32f9b28d9b0"
 	],
 	"folders": [],
 	"timestamp": 1456428697847,
@@ -25,6 +26,26 @@
 			"description": "",
 			"descriptionFormat": "html",
 			"time": 1456428823136,
+			"version": 2,
+			"responses": [],
+			"tests": "tests[\"Status code is 200\"] = responseCode.code === 200;\n\n\ntests[\"Content-Type is present\"] = postman.getResponseHeader(\"Content-Type\");",
+			"currentHelper": "normal",
+			"helperAttributes": {}
+		},
+		{
+			"id": "42c2e8ea-22e9-f632-7f16-e32f9b28d9b0",
+			"headers": "",
+			"url": "{{url}}{{base_url}}/functions",
+			"pathVariables": [],
+			"preRequestScript": "",
+			"method": "GET",
+			"collectionId": "524697ac-4a8a-ed06-9115-563b57442ef1",
+			"data": [],
+			"dataMode": "params",
+			"name": "Functions",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1456429720121,
 			"version": 2,
 			"responses": [],
 			"tests": "tests[\"Status code is 200\"] = responseCode.code === 200;\n\n\ntests[\"Content-Type is present\"] = postman.getResponseHeader(\"Content-Type\");",
