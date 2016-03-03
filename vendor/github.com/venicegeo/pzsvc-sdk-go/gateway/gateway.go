@@ -14,15 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package servicecontroller provides pz-servicecontroller helper functions.
-package servicecontroller
+// Package gateway provides pz-gateway helper functions.
+package gateway
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
 )
 
@@ -37,19 +39,15 @@ type ResourceMetadata struct {
 	Params           string `json:"params,omitempty"`
 }
 
-// RegisterServiceMsg defines the expected output JSON returned by Piazza when
+// JobMsg defines the expected output JSON returned by Piazza when
 // an external service is registered.
-type RegisterServiceMsg struct {
-	ResourceID string `json:"resourceId"`
+type JobMsg struct {
+	Type  string `json:"type"`
+	JobID string `json:"jobId"`
 }
 
-// ContentTypeJSON is the http content-type for JSON.
-const ContentTypeJSON = "application/json"
-
-// registryURL is the Piazza registration endpoint
-const RegistryURL = "http://pz-servicecontroller.cf.piazzageo.io/servicecontroller/registerService"
-
-//const RegistryURL = "http://localhost:8082/servicecontroller/registerService"
+// GatewayJobURL is the Piazza registration endpoint
+const GatewayJobURL = "http://pz-gateway.cf.piazzageo.io/job"
 
 /*
 RegisterService handles service registartion with Piazza for external services.
@@ -60,28 +58,47 @@ func RegisterService(m ResourceMetadata) error {
 		return errors.New("Error marshaling ResourceMetadata")
 	}
 
-	response, err := http.Post(
-		RegistryURL, ContentTypeJSON, bytes.NewBuffer(data),
-	)
+	str := fmt.Sprintf("{\"apiKey\":\"my-api-key-38n987\",\"jobType\":{\"type\":\"register-service\",\"data\":%s}}", bytes.NewBuffer(data))
+	fmt.Println(str)
+
+	var buffer bytes.Buffer
+	w := multipart.NewWriter(&buffer)
+	err = w.WriteField("body", str)
 	if err != nil {
-		return errors.New("Error posting ResourceMetadata to registerService")
+		return errors.New("Error writing body")
+	}
+	err = w.Close()
+	if err != nil {
+		return errors.New("Error closing writer")
+	}
+
+	req, err := http.NewRequest("POST", GatewayJobURL, &buffer)
+	if err != nil {
+		return errors.New("Error creating request")
+	}
+	req.Header.Add("Content-Type", w.FormDataContentType())
+
+	client := &http.Client{}
+	response, err := client.Do(req)
+	if err != nil {
+		return errors.New("Error performing request")
 	}
 
 	if response.Body == nil {
-		return errors.New("No JSON body returned from registerService")
+		return errors.New("No JSON body returned from gateway")
 	}
+	defer response.Body.Close()
 
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return errors.New("Error reading JSON body returned from registerService")
+		return errors.New("Error reading JSON body returned from gateway")
 	}
 
-	// Throw 400 if we cannot unmarshal the body as a valid InputMsg.
-	var rm RegisterServiceMsg
+	var rm JobMsg
 	if err := json.Unmarshal(b, &rm); err != nil {
-		return errors.New("Error unmarshaling RegisterServiceMsg")
+		return errors.New("Error unmarshaling JobMsg")
 	}
-	log.Println("RegisterService received resourceId=" + rm.ResourceID)
+	log.Println("Gateway received type " + rm.Type + ", jobId " + rm.JobID)
 
 	return nil
 }

@@ -66,7 +66,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/venicegeo/pzsvc-pdal/functions"
 	"github.com/venicegeo/pzsvc-pdal/handlers"
-	"github.com/venicegeo/pzsvc-sdk-go/servicecontroller"
+	"github.com/venicegeo/pzsvc-sdk-go/gateway"
 )
 
 type appHandler func(http.ResponseWriter, *http.Request) *handlers.AppError
@@ -85,15 +85,15 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	m := servicecontroller.ResourceMetadata{
+	m := gateway.ResourceMetadata{
 		Name:             "pzsvc-pdal",
 		URL:              "http://pzsvc-pdal.cf.piazzageo.io/api/v1/pdal",
 		Description:      "Process point cloud data using PDAL",
 		Method:           "POST",
-		RequestMimeType:  servicecontroller.ContentTypeJSON,
-		ResponseMimeType: servicecontroller.ContentTypeJSON,
+		RequestMimeType:  "application/json",
+		ResponseMimeType: "application/json",
 	}
-	if err := servicecontroller.RegisterService(m); err != nil {
+	if err := gateway.RegisterService(m); err != nil {
 		log.Println(err)
 	}
 
