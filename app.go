@@ -97,6 +97,7 @@ func main() {
 		log.Println(err)
 	}
 
+
 	router := httprouter.New()
 
 	router.GET("/",
