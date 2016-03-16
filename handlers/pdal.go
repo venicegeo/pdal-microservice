@@ -32,12 +32,6 @@ import (
 	"github.com/venicegeo/pzsvc-sdk-go/s3"
 )
 
-type AppError struct {
-	Error   error
-	Message string
-	Code    int
-}
-
 // InputMsg defines the expected input JSON structure.
 // We currently support S3 input (bucket/key), though provider-specific (e.g.,
 // GRiD) may be legitimate.

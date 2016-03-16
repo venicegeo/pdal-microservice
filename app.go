@@ -97,7 +97,6 @@ func main() {
 		log.Println(err)
 	}
 
-
 	router := httprouter.New()
 
 	router.GET("/",
@@ -182,6 +181,8 @@ func main() {
 
 	// // Setup the PDAL service.
 	router.Handler("POST", "/api/v1/pdal", appHandler(handlers.PdalHandler))
+
+	router.Handler("POST", "/api/v1/pipeline", appHandler(handlers.PipelineHandler))
 
 	var defaultPort = os.Getenv("PORT")
 	if defaultPort == "" {
