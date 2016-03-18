@@ -7,7 +7,7 @@ applications:
   command: ./pzsvc-pdal
   buildpack: https://github.com/venicegeo/binary-pdal-buildpack
   env:
-    GDAL_DATA: "/home/vcap/app/gdal/1.10"
-    LD_LIBRARY_PATH: "/home/vcap/app/pdal"
-    PATH: "/home/vcap/app/pdal:/bin:/usr/bin:/home/vcap/app/bin"
-    PDAL_DRIVER_PATH: "/home/vcap/app/pdal"
+    GDAL_DATA: "/usr/local/share/gdal"
+    LD_LIBRARY_PATH: "/usr/local/lib"
+    PATH: "/usr/local/bin:/bin:/usr/bin:/home/vcap/app/bin"
+    PDAL_DRIVER_PATH: "/usr/local/lib"
