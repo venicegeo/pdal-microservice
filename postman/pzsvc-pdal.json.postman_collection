@@ -69,7 +69,7 @@
 		{
 			"id": "050b4b2e-e327-5970-4c9e-387f15a6c0df",
 			"headers": "Content-Type: application/json\n",
-			"url": "http://pz-servicecontroller.cf.piazzageo.io/servicecontroller/executeService",
+			"url": "http://pz-servicecontroller.stage.geointservices.io/servicecontroller/executeService",
 			"pathVariables": {},
 			"preRequestScript": "",
 			"method": "POST",
@@ -193,7 +193,7 @@
 		{
 			"id": "30dee852-4cad-8040-b098-949899e5e747",
 			"headers": "Content-Type: application/json\n",
-			"url": "http://pz-servicecontroller.cf.piazzageo.io/servicecontroller/executeService",
+			"url": "http://pz-servicecontroller.stage.geointservices.io/servicecontroller/executeService",
 			"pathVariables": {},
 			"preRequestScript": "",
 			"method": "POST",
@@ -461,7 +461,7 @@
 		{
 			"id": "c8c7db44-0674-ba2b-c240-2ab79a1371ea",
 			"headers": "Content-Type: application/json\n",
-			"url": "http://pz-servicecontroller.cf.piazzageo.io/servicecontroller/registerService",
+			"url": "http://pz-servicecontroller.stage.geointservices.io/servicecontroller/registerService",
 			"pathVariables": {},
 			"preRequestScript": "",
 			"method": "POST",
@@ -477,7 +477,7 @@
 			"tests": "",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"rawModeData": "{\n \"name\":\"pzsvc-pdal\",\n \"description\":\"Process point cloud data using PDAL\",\n \"url\":\"http://pzsvc-pdal.cf.piazzageo.io/api/v1/pdal\",\n \"method\":\"POST\",\n \"params\": [],\n \"requestMimeType\":\"application/json\",\n \"responseMimeType\":\"application/json\"\n}"
+			"rawModeData": "{\n \"name\":\"pzsvc-pdal\",\n \"description\":\"Process point cloud data using PDAL\",\n \"url\":\"http://pzsvc-pdal.stage.geointservices.io/api/v1/pdal\",\n \"method\":\"POST\",\n \"params\": [],\n \"requestMimeType\":\"application/json\",\n \"responseMimeType\":\"application/json\"\n}"
 		},
 		{
 			"id": "cb5f72c4-202b-b40d-f46f-933a622b18fb",
