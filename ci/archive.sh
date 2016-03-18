@@ -15,7 +15,9 @@ export GO15VENDOREXPERIMENT=1
 
 go get -v github.com/venicegeo/$APP
 
-git checkout $SHA
+cd $GOPATH/src/github.com/venicegeo/$APP
+
+git checkout -f $SHA
 
 go install -v github.com/venicegeo/$APP
 
