@@ -15,6 +15,8 @@ export GO15VENDOREXPERIMENT=1
 
 go get -v github.com/venicegeo/$APP
 
+git checkout $SHA
+
 go install -v github.com/venicegeo/$APP
 
 
