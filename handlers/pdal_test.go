@@ -16,16 +16,6 @@ limitations under the License.
 
 package handlers
 
-import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
-
-	"github.com/julienschmidt/httprouter"
-)
-
 // these require PDAL - not appropriate for Jenkins
 // func TestBasicInfo(t *testing.T) {
 // 	userJSON := `{
@@ -99,49 +89,49 @@ import (
 // 	}
 // }
 
-// this is specific to our service, it stays
-func TestNoFunctionField(t *testing.T) {
-	userJSON := `{
-		"source":
-		{
-			"bucket": "venicegeo-sample-data",
-			"key": "pointcloud/samp71-utm.laz"
-		},
-		"fail": "info"
-	}`
-	reader := strings.NewReader(userJSON)
-	router := httprouter.New()
-	router.POST("/api/v1/pdal", PdalHandler)
-	req, _ := http.NewRequest("POST", "/api/v1/pdal", reader)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-	fmt.Println(w.Body)
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("StatusBadRequest expected: %d", w.Code)
-	}
-}
-
-// also specific to our service, it too stays
-func TestBadFunction(t *testing.T) {
-	userJSON := `{
-		"source":
-		{
-			"bucket": "venicegeo-sample-data",
-			"key": "pointcloud/samp71-utm.laz"
-		},
-		"function": "fail"
-	}`
-	reader := strings.NewReader(userJSON)
-	router := httprouter.New()
-	router.POST("/api/v1/pdal", PdalHandler)
-	req, _ := http.NewRequest("POST", "/api/v1/pdal", reader)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-	fmt.Println(w.Body)
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("StatusBadRequest expected: %d", w.Code)
-	}
-}
+// // this is specific to our service, it stays
+// func TestNoFunctionField(t *testing.T) {
+// 	userJSON := `{
+// 		"source":
+// 		{
+// 			"bucket": "venicegeo-sample-data",
+// 			"key": "pointcloud/samp71-utm.laz"
+// 		},
+// 		"fail": "info"
+// 	}`
+// 	reader := strings.NewReader(userJSON)
+// 	router := httprouter.New()
+// 	router.POST("/api/v1/pdal", PdalHandler)
+// 	req, _ := http.NewRequest("POST", "/api/v1/pdal", reader)
+// 	w := httptest.NewRecorder()
+// 	router.ServeHTTP(w, req)
+// 	fmt.Println(w.Body)
+// 	if w.Code != http.StatusBadRequest {
+// 		t.Errorf("StatusBadRequest expected: %d", w.Code)
+// 	}
+// }
+//
+// // also specific to our service, it too stays
+// func TestBadFunction(t *testing.T) {
+// 	userJSON := `{
+// 		"source":
+// 		{
+// 			"bucket": "venicegeo-sample-data",
+// 			"key": "pointcloud/samp71-utm.laz"
+// 		},
+// 		"function": "fail"
+// 	}`
+// 	reader := strings.NewReader(userJSON)
+// 	router := httprouter.New()
+// 	router.POST("/api/v1/pdal", PdalHandler)
+// 	req, _ := http.NewRequest("POST", "/api/v1/pdal", reader)
+// 	w := httptest.NewRecorder()
+// 	router.ServeHTTP(w, req)
+// 	fmt.Println(w.Body)
+// 	if w.Code != http.StatusBadRequest {
+// 		t.Errorf("StatusBadRequest expected: %d", w.Code)
+// 	}
+// }
 
 // these really test elements of pzsvc-sdk-go
 // func TestBadBucket(t *testing.T) {
@@ -211,15 +201,15 @@ func TestBadFunction(t *testing.T) {
 // 		t.Errorf("StatusBadRequest expected: %d", w.Code)
 // 	}
 // }
-
-func TestBadEndpoint(t *testing.T) {
-	router := httprouter.New()
-	router.POST("/ladp", PdalHandler)
-	req, _ := http.NewRequest("POST", "/ladp", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-	fmt.Println(w.Body)
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("StatusBadRequest expected: %d", w.Code)
-	}
-}
+//
+// func TestBadEndpoint(t *testing.T) {
+// 	router := httprouter.New()
+// 	router.POST("/ladp", PdalHandler)
+// 	req, _ := http.NewRequest("POST", "/ladp", nil)
+// 	w := httptest.NewRecorder()
+// 	router.ServeHTTP(w, req)
+// 	fmt.Println(w.Body)
+// 	if w.Code != http.StatusBadRequest {
+// 		t.Errorf("StatusBadRequest expected: %d", w.Code)
+// 	}
+// }
