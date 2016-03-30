@@ -59,7 +59,7 @@ func Translate(i, o string, options *json.RawMessage) ([]byte, error) {
 	args = append(args, i)
 	args = append(args, o)
 	args = append(args, optArgs...)
-	args = append(args, "-v10", "--debug")
+	args = append(args, "-v", "10", "--debug")
 
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 

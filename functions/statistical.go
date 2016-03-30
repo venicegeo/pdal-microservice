@@ -54,7 +54,7 @@ func Statistical(i, o string, options *json.RawMessage) ([]byte, error) {
 	// we can make this optional later
 	args = append(args, "--filters.statisticaloutlier.extract=true")
 	args = append(args, "--filters.statisticaloutlier.classify=false")
-	args = append(args, "-v10", "--debug")
+	args = append(args, "-v", "10", "--debug")
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 
 	fmt.Println(string(out))
