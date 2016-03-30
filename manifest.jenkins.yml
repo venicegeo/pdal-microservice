@@ -8,7 +8,7 @@ applications:
   instances: 1
   timeout: 180
   env:
-    GDAL_DATA: "/home/vcap/app/gdal/1.10"
-    LD_LIBRARY_PATH: "/home/vcap/app/pdal"
-    PATH: "/home/vcap/app/pdal:/bin:/usr/bin:/home/vcap/app/bin"
-    PDAL_DRIVER_PATH: "/home/vcap/app/pdal"
+    GDAL_DATA: "/home/vcap/app/vendor/pdal/share/epsg_csv/"
+    LD_LIBRARY_PATH: "/home/vcap/app/vendor/pdal/lib"
+    PATH: "/home/vcap/app/vendor/pdal/bin:/bin:/usr/bin:/home/vcap/app/bin"
+    PDAL_DRIVER_PATH: "/home/vcap/app/vendor/pdal/lib"
