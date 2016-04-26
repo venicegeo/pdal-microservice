@@ -188,6 +188,7 @@ func main() {
 	if defaultPort == "" {
 		defaultPort = "8080"
 	}
+	log.Println()
 
 	log.Println("Starting on port ", defaultPort)
 	if err := http.ListenAndServe(":"+defaultPort, router); err != nil {
