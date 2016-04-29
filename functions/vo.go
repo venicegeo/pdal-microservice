@@ -27,8 +27,8 @@ import (
 
 // VO implements pdal vo.
 func VO(i, o string, options *json.RawMessage) ([]byte, error) {
-	out, err := exec.Command("pdal", "vo", i, o, "-v", "10",
-		"--debug").CombinedOutput()
+	out, err := exec.Command("pdal", "translate", i, o, "-w", "writers.vo", "-v",
+		"10", "--debug").CombinedOutput()
 
 	fmt.Println(string(out))
 	if err != nil {
