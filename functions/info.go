@@ -65,7 +65,7 @@ func Info(i, o string, options *json.RawMessage) ([]byte, error) {
 	if opts.Schema {
 		args = append(args, "--schema")
 	}
-	log.Println("set args " + args...)
+	log.Println("set args")
 
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 	if err != nil {
