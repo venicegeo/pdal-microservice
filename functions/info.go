@@ -79,6 +79,7 @@ func Info(i, o string, options *json.RawMessage) ([]byte, error) {
 	log.Println("new bytes buffer")
 	err = json.Compact(buffer, out)
 	log.Println("tried compact")
+	log.Println(buffer.String())
 	if err != nil {
 		log.Println("error")
 		return nil, errors.New("Error with json.Compact() " + err.Error())
