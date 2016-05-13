@@ -111,7 +111,7 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 			// Download the source data from S3, throwing 500 on error.
 			err = s3.Download(fileIn, src.Bucket, src.Key)
 			if err != nil {
-				return nil, errors.New("Error with s3.Download()" + err.Error())
+				return nil, errors.New("Error with s3.Download() " + err.Error())
 			}
 		}
 
@@ -121,16 +121,13 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 		if len(msg.Destination.Key) > 0 {
 			outputName = s3.ParseFilenameFromKey(msg.Destination.Key)
 
-			err := os.Remove(outputName)
-			if err != nil {
-				return nil, errors.New("Error with os.Remove()" + err.Error())
-			}
+			os.Remove(outputName)
 		}
 
 		// Run the PDAL function.
 		retval, err := fn(inputName, outputName, msg.Options)
 		if err != nil {
-			return nil, errors.New("Error with Info function" + err.Error())
+			return nil, errors.New("Error with Info function " + err.Error())
 		}
 
 		// If an output has been created, upload the destination data to S3,

@@ -47,7 +47,7 @@ func Info(i, o string, options *json.RawMessage) ([]byte, error) {
 	opts := NewInfoOptions()
 	if options != nil {
 		if err := json.Unmarshal(*options, &opts); err != nil {
-			return nil, errors.New("Error with json.Unmarshal()" + err.Error())
+			return nil, errors.New("Error with json.Unmarshal() " + err.Error())
 		}
 	}
 
@@ -64,12 +64,15 @@ func Info(i, o string, options *json.RawMessage) ([]byte, error) {
 		args = append(args, "--schema")
 	}
 
-	out, _ := exec.Command("pdal", args...).CombinedOutput()
+	out, err := exec.Command("pdal", args...).CombinedOutput()
+	if err != nil {
+		return nil, errors.New("Error with exec.Command() " + err.Error())
+	}
 
 	// Trim whitespace
 	buffer := new(bytes.Buffer)
 	if err := json.Compact(buffer, out); err != nil {
-		return nil, errors.New("Error with json.Compact()" + err.Error())
+		return nil, errors.New("Error with json.Compact() " + err.Error())
 	}
 
 	return buffer.Bytes(), nil
