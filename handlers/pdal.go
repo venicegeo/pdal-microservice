@@ -268,10 +268,10 @@ func PdalHandler(w http.ResponseWriter, r *http.Request) *AppError {
 	case "info":
 		bytes, err := MakeFunction(functions.Info)(msg)
 		if err != nil {
-			return &AppError{err, "Info error", http.StatusInternalServerError}
+			return &AppError{err, "Info error: MakeFunction", http.StatusInternalServerError}
 		}
 		if err := json.Unmarshal(bytes, &res.Response); err != nil {
-			return &AppError{err, "Info error", http.StatusInternalServerError}
+			return &AppError{err, "Info error: Unmarshal", http.StatusInternalServerError}
 		}
 
 		res.FinishedAt = time.Now()
