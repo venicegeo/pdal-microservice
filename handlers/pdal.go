@@ -119,9 +119,12 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 		// error.
 		if len(msg.Destination.Key) > 0 {
 			outputName = s3.ParseFilenameFromKey(msg.Destination.Key)
-		}
 
-		os.Remove(outputName)
+			err := os.Remove(outputName)
+			if err != nil {
+				return nil, err
+			}
+		}
 
 		// Run the PDAL function.
 		retval, err := fn(inputName, outputName, msg.Options)
