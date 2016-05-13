@@ -72,10 +72,12 @@ func Info(i, o string, options *json.RawMessage) ([]byte, error) {
 		return nil, errors.New("Error with exec.Command() " + err.Error())
 	}
 	log.Println("ran the command")
+	log.Println(string(out))
 
 	// Trim whitespace
 	buffer := new(bytes.Buffer)
-	if err := json.Compact(buffer, out); err != nil {
+	err = json.Compact(buffer, out)
+	if err != nil {
 		return nil, errors.New("Error with json.Compact() " + err.Error())
 	}
 	log.Println("compact buffer")
