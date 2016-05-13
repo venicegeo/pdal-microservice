@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"log"
 	"os/exec"
 )
 
@@ -51,7 +50,6 @@ func Info(i, o string, options *json.RawMessage) ([]byte, error) {
 			return nil, errors.New("Error with json.Unmarshal() " + err.Error())
 		}
 	}
-	log.Println("detected info options")
 
 	var args []string
 	args = append(args, "info")
@@ -65,26 +63,21 @@ func Info(i, o string, options *json.RawMessage) ([]byte, error) {
 	if opts.Schema {
 		args = append(args, "--schema")
 	}
-	log.Println("set args")
 
 	out, err := exec.Command("pdal", args...).CombinedOutput()
 	if err != nil {
 		return nil, errors.New("Error with exec.Command() " + err.Error())
 	}
-	log.Println("ran the command")
-	log.Println(string(out))
 
 	// Trim whitespace
 	buffer := new(bytes.Buffer)
-	log.Println("new bytes buffer")
+	// TODO (chambbj): Compact currently freaks out when it encounters JSON with
+	// unquoted strings (nan's in our case). I think this should be fixed in PDAL,
+	// but maybe we can/should mitigate here too.
 	err = json.Compact(buffer, out)
-	log.Println("tried compact")
-	log.Println(buffer.String())
 	if err != nil {
-		log.Println("error")
 		return nil, errors.New("Error with json.Compact() " + err.Error())
 	}
-	log.Println("compact buffer")
 
 	return buffer.Bytes(), nil
 }
