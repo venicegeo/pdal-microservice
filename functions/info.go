@@ -19,6 +19,7 @@ package functions
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"os/exec"
 )
 
@@ -46,7 +47,7 @@ func Info(i, o string, options *json.RawMessage) ([]byte, error) {
 	opts := NewInfoOptions()
 	if options != nil {
 		if err := json.Unmarshal(*options, &opts); err != nil {
-			return nil, err
+			return nil, errors.New("Error with json.Unmarshal()" + err.Error())
 		}
 	}
 
@@ -68,7 +69,7 @@ func Info(i, o string, options *json.RawMessage) ([]byte, error) {
 	// Trim whitespace
 	buffer := new(bytes.Buffer)
 	if err := json.Compact(buffer, out); err != nil {
-		return nil, err
+		return nil, errors.New("Error with json.Compact()" + err.Error())
 	}
 
 	return buffer.Bytes(), nil

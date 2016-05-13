@@ -18,6 +18,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -110,7 +111,7 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 			// Download the source data from S3, throwing 500 on error.
 			err = s3.Download(fileIn, src.Bucket, src.Key)
 			if err != nil {
-				return nil, err
+				return nil, errors.New("Error with s3.Download()" + err.Error())
 			}
 		}
 
@@ -122,14 +123,14 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 
 			err := os.Remove(outputName)
 			if err != nil {
-				return nil, err
+				return nil, errors.New("Error with os.Remove()" + err.Error())
 			}
 		}
 
 		// Run the PDAL function.
 		retval, err := fn(inputName, outputName, msg.Options)
 		if err != nil {
-			return nil, err
+			return nil, errors.New("Error with Info function" + err.Error())
 		}
 
 		// If an output has been created, upload the destination data to S3,
