@@ -114,6 +114,7 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 				return nil, errors.New("Error with s3.Download() " + err.Error())
 			}
 		}
+		log.Println("file downloaded")
 
 		// If provided, split the destination S3 key string, interpreting the last
 		// element as the output filename. Create the output file, throwing 500 on
@@ -123,12 +124,14 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 
 			os.Remove(outputName)
 		}
+		log.Println("run the function")
 
 		// Run the PDAL function.
 		retval, err := fn(inputName, outputName, msg.Options)
 		if err != nil {
 			return nil, errors.New("Error with Info function " + err.Error())
 		}
+		log.Println("done!")
 
 		// If an output has been created, upload the destination data to S3,
 		// throwing 500 on error.
@@ -143,6 +146,7 @@ func MakeFunction(fn func(string, string, *json.RawMessage) ([]byte, error)) Fun
 				return nil, err
 			}
 		}
+		log.Println("return")
 
 		return retval, nil
 	}
