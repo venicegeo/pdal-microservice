@@ -61,6 +61,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/julienschmidt/httprouter"
@@ -102,6 +103,14 @@ func main() {
 	router.GET("/",
 		func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 			fmt.Fprintf(w, "Hi!")
+		})
+
+	router.GET("/api/v1/version",
+		func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+			cmd := exec.Command("pdal", "--debug")
+			b, _ := cmd.CombinedOutput()
+			fmt.Printf(string(b))
+			fmt.Fprintf(w, string(b))
 		})
 
 	type ListFuncs struct {
