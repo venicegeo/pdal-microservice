@@ -77,11 +77,12 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if awsErr, ok := e.Error.(awserr.Error); ok {
 			e.Message = awsErr.Message()
 		}
+		log.Println(e.Message)
 
+		w.WriteHeader(e.Code)
 		if err := json.NewEncoder(w).Encode(e); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		w.WriteHeader(e.Code)
 	}
 }
 
@@ -188,10 +189,12 @@ func main() {
 			}
 		})
 
-	// // Setup the PDAL service.
+	// Setup the PDAL service.
 	router.Handler("POST", "/api/v1/pdal", appHandler(handlers.PdalHandler))
 
 	router.Handler("POST", "/api/v1/pipeline", appHandler(handlers.PipelineHandler))
+
+	router.Handler("POST", "/api/v1/vo", appHandler(handlers.VoHandler))
 
 	var defaultPort = os.Getenv("PORT")
 	if defaultPort == "" {
