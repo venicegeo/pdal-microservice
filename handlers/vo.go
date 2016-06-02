@@ -39,6 +39,7 @@ type VoOptions struct {
 	Tolerance   float64 `json:"tolerance"`
 	Z0Tolerance float64 `json:"z0_tolerance"`
 	Denoise     bool    `json:"denoise"`
+	AssignSRS   *string `json:"a_srs"`
 }
 
 // NewVoOptions constructs VoOptions with default values.
@@ -89,6 +90,25 @@ func VoHandler(w http.ResponseWriter, r *http.Request) *AppError {
 	outFile := "out.json"
 	os.Remove(outFile)
 
+	if opts.AssignSRS != nil {
+		projected := name + "-projected.laz"
+
+		projStr := "--writers.las.a_srs=" + *opts.AssignSRS
+
+		srsArgs := []string{
+			"translate", name, projected, projStr, "-v", "3", "--debug",
+		}
+		log.Println("Assigning SRS with args", srsArgs)
+		srsOut, srsErr := exec.Command("pdal", srsArgs...).CombinedOutput()
+		if err != nil {
+			return &AppError{srsErr, srsErr.Error(), http.StatusInternalServerError}
+		}
+		log.Println("PDAL CLI responded with")
+		log.Println(string(srsOut))
+
+		name = projected
+	}
+
 	args := []string{
 		"translate", name, outFile,
 		"-w", "writers.vo", "-v", "3", "--debug",
@@ -130,6 +150,9 @@ func VoHandler(w http.ResponseWriter, r *http.Request) *AppError {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, buffer.String())
 
+	// TODO(chambbj): there is a case where we have assigned a projected, which
+	// created another file that needs to be cleaned up...may be better in the
+	// future to create/use a temp dir that just gets cleared, wiping everything
 	os.Remove(name)
 
 	return nil
