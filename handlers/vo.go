@@ -130,5 +130,7 @@ func VoHandler(w http.ResponseWriter, r *http.Request) *AppError {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, buffer.String())
 
+	os.Remove(name)
+
 	return nil
 }
