@@ -39,7 +39,8 @@ type VoOptions struct {
 	Tolerance   float64 `json:"tolerance"`
 	Z0Tolerance float64 `json:"z0_tolerance"`
 	Denoise     bool    `json:"denoise"`
-	AssignSRS   *string `json:"a_srs"`
+	InSRS       *string `json:"inSRS"`
+	OutSRS      *string `json:"outSRS"`
 }
 
 // NewVoOptions constructs VoOptions with default values.
@@ -90,25 +91,6 @@ func VoHandler(w http.ResponseWriter, r *http.Request) *AppError {
 	outFile := "out.json"
 	os.Remove(outFile)
 
-	if opts.AssignSRS != nil {
-		projected := name + "-projected.laz"
-
-		projStr := "--writers.las.a_srs=" + *opts.AssignSRS
-
-		srsArgs := []string{
-			"translate", name, projected, projStr, "-v", "3", "--debug",
-		}
-		log.Println("Assigning SRS with args", srsArgs)
-		srsOut, srsErr := exec.Command("pdal", srsArgs...).CombinedOutput()
-		if err != nil {
-			return &AppError{srsErr, srsErr.Error(), http.StatusInternalServerError}
-		}
-		log.Println("PDAL CLI responded with")
-		log.Println(string(srsOut))
-
-		name = projected
-	}
-
 	args := []string{
 		"translate", name, outFile,
 		"-w", "writers.vo", "-v", "3", "--debug",
@@ -118,6 +100,11 @@ func VoHandler(w http.ResponseWriter, r *http.Request) *AppError {
 		getFloatAsString("--writers.vo.resolution", opts.Resolution),
 		getFloatAsString("--writers.vo.tolerance", opts.Tolerance),
 		getFloatAsString("--writers.vo.z0_tolerance", opts.Z0Tolerance),
+	}
+	if opts.InSRS != nil && opts.OutSRS != nil {
+		inSRS := "--filters.reprojection.inSRS=" + *opts.InSRS
+		outSRS := "--filters.reprojection.outSRS=" + *opts.OutSRS
+		args = append(args, "-f", "filters.reprojection", inSRS, outSRS)
 	}
 	if opts.Denoise {
 		args = append(args, "-f", "filters.statisticaloutlier", "--filters.statisticaloutlier.extract=true")
