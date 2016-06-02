@@ -39,8 +39,8 @@ type VoOptions struct {
 	Tolerance   float64 `json:"tolerance"`
 	Z0Tolerance float64 `json:"z0_tolerance"`
 	Denoise     bool    `json:"denoise"`
-	InSRS       *string `json:"inSRS"`
-	OutSRS      *string `json:"outSRS"`
+	InSRS       *string `json:"in_srs"`
+	OutSRS      *string `json:"out_srs"`
 }
 
 // NewVoOptions constructs VoOptions with default values.
@@ -102,8 +102,8 @@ func VoHandler(w http.ResponseWriter, r *http.Request) *AppError {
 		getFloatAsString("--writers.vo.z0_tolerance", opts.Z0Tolerance),
 	}
 	if opts.InSRS != nil && opts.OutSRS != nil {
-		inSRS := "--filters.reprojection.inSRS=" + *opts.InSRS
-		outSRS := "--filters.reprojection.outSRS=" + *opts.OutSRS
+		inSRS := "--filters.reprojection.in_srs=" + *opts.InSRS
+		outSRS := "--filters.reprojection.out_srs=" + *opts.OutSRS
 		args = append(args, "-f", "filters.reprojection", inSRS, outSRS)
 	}
 	if opts.Denoise {
