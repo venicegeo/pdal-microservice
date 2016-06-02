@@ -26,6 +26,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -42,8 +43,9 @@ func inferAndDownload(rawurl *url.URL) (name string, size int64, err error) {
 	case "s3":
 		bucket := rawurl.Host
 		key := strings.TrimLeft(rawurl.Path, "/")
+		ext := filepath.Ext(key)
 
-		fname := "download_file-" + strconv.Itoa(readerNum) + ".laz"
+		fname := "download_file-" + strconv.Itoa(readerNum) + ext
 		readerNum++
 		file, err := os.Create(fname)
 		if err != nil {
@@ -70,8 +72,9 @@ func inferAndDownload(rawurl *url.URL) (name string, size int64, err error) {
 			return "", 0, err
 		}
 		defer resp.Body.Close()
+		ext := filepath.Ext(rawurl.String())
 
-		fname := "download_file-" + strconv.Itoa(readerNum) + ".laz"
+		fname := "download_file-" + strconv.Itoa(readerNum) + ext
 		readerNum++
 		file, err := os.Create(fname)
 		if err != nil {

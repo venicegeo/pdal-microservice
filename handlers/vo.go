@@ -38,6 +38,7 @@ type VoOptions struct {
 	Resolution  float64 `json:"resolution"`
 	Tolerance   float64 `json:"tolerance"`
 	Z0Tolerance float64 `json:"z0_tolerance"`
+	Denoise     bool    `json:"denoise"`
 }
 
 // NewVoOptions constructs VoOptions with default values.
@@ -85,8 +86,11 @@ func VoHandler(w http.ResponseWriter, r *http.Request) *AppError {
 		return &AppError{err, err.Error(), http.StatusInternalServerError}
 	}
 
+	outFile := "out.json"
+	os.Remove(outFile)
+
 	args := []string{
-		"translate", name, "out.json",
+		"translate", name, outFile,
 		"-w", "writers.vo", "-v", "3", "--debug",
 		getFloatAsString("--writers.vo.agl", opts.AGL),
 		getUintAsString("--writers.vo.max_size", opts.MaxSize),
@@ -94,6 +98,9 @@ func VoHandler(w http.ResponseWriter, r *http.Request) *AppError {
 		getFloatAsString("--writers.vo.resolution", opts.Resolution),
 		getFloatAsString("--writers.vo.tolerance", opts.Tolerance),
 		getFloatAsString("--writers.vo.z0_tolerance", opts.Z0Tolerance),
+	}
+	if opts.Denoise {
+		args = append(args, "-f", "filters.statisticaloutlier", "--filters.statisticaloutlier.extract=true")
 	}
 	log.Println("PDAL CLI called with args", args)
 	out, err := exec.Command("pdal", args...).CombinedOutput()
@@ -103,7 +110,7 @@ func VoHandler(w http.ResponseWriter, r *http.Request) *AppError {
 	log.Println("PDAL CLI responded with")
 	log.Println(string(out))
 
-	fileOut, err := os.Open("out.json")
+	fileOut, err := os.Open(outFile)
 	if err != nil {
 		return &AppError{err, err.Error(), http.StatusInternalServerError}
 	}
